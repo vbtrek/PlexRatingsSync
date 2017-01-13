@@ -15,7 +15,7 @@ using System.Xml;
 using System.Xml.XPath;
 using System.Text.RegularExpressions;
 using System.Web;
-using DS.MessageHandling;
+using DS.Library.MessageHandling;
 
 namespace DS.PlexRatingsSync
 {

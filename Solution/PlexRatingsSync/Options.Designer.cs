@@ -30,7 +30,7 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Options));
-            this.grdConfig = new DS.PropertyGridEx.PropertyGridEx();
+            this.grdConfig = new DS.Controls.PropertyGridEx();
             this.SuspendLayout();
             // 
             // grdConfig
@@ -105,6 +105,6 @@
 
         #endregion
 
-        private DS.PropertyGridEx.PropertyGridEx grdConfig;
+        private DS.Controls.PropertyGridEx grdConfig;
     }
 }
