@@ -52,6 +52,8 @@ namespace DS.PlexRatingsSync
 
         private void Form1_Shown(object sender, EventArgs e)
         {
+            bool ok = true;
+
             if (!IsSettingValid())
             {
                 cmdOptions.Enabled = false;
@@ -68,10 +70,13 @@ namespace DS.PlexRatingsSync
 
                 cmdOptions.Enabled = true;
 
-                if (!IsSettingValid()) Close();
+                if (!IsSettingValid()) ok = false;
             }
 
-            StartProcessing();
+            if (ok)
+                StartProcessing();
+            else
+                Close();
         }
 
         private bool IsSettingValid()
@@ -222,7 +227,7 @@ namespace DS.PlexRatingsSync
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            m_DbConnection.Close();
+            if (m_DbConnection != null) m_DbConnection.Close();
         }
 
         private void bwProcess_DoWork(object sender, DoWorkEventArgs e)
