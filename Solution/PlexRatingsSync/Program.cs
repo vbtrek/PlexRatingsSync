@@ -71,7 +71,7 @@ namespace DS.PlexRatingsSync
         {
             TaskDialogCommandLink link = sender as TaskDialogCommandLink;
             TaskDialog d = link.HostingDialog as TaskDialog;
-            d.Close(TaskDialogResult.Close);
+            d.Close(TaskDialogResult.CustomButtonClicked);
         }
     }
 }
