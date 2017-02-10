@@ -322,7 +322,8 @@ namespace DS.PlexRatingsSync
                 string sql = string.Empty;
 
                 // Get all the accounts to store ratings against
-                sql = @"SELECT * FROM accounts;";
+// TODO_DS Add an option to choose the Plex account to sync
+                sql = @"SELECT * FROM accounts WHERE id = 1;";
                 List<PlexTableAccounts> accounts = m_PlexDb.ReadPlexAndMap<PlexTableAccounts>(sql);
 
                 // Sync ratings
@@ -344,13 +345,14 @@ namespace DS.PlexRatingsSync
             // Get all the files to sync ratings for
             bwProcess.ReportProgress(0, "Reading Track Data From Plex...");
 
+// TODO_DS Add an option to choose the Plex account to sync
             string sql = @"
 SELECT MTI.guid, MP.file, MTIS.rating
 FROM media_items MI
 INNER JOIN media_parts MP ON MP.media_item_id = MI.id
 INNER JOIN metadata_items MTI ON MTI.id = MI.metadata_item_id
 INNER JOIN library_sections LS ON LS.id = MI.library_section_id
-LEFT JOIN metadata_item_settings MTIS ON MTIS.guid = MTI.guid
+LEFT JOIN metadata_item_settings MTIS ON MTIS.guid = MTI.guid AND MTIS.account_id = 1
 WHERE LS.section_type = 8";
             List<PlexRatingsData> ratingdata = m_PlexDb.ReadPlexAndMap<PlexRatingsData>(sql);
 
