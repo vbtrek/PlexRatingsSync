@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using DS.Library.MessageHandling;
-using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace DS.PlexRatingsSync
 {
@@ -43,13 +42,6 @@ namespace DS.PlexRatingsSync
             System.Reflection.AssemblyName assemblyName = assembly.GetName();
 
             Application.Run(new Main());
-        }
-
-        private static void Tdcl_Click(object sender, EventArgs e)
-        {
-            TaskDialogCommandLink link = sender as TaskDialogCommandLink;
-            TaskDialog d = link.HostingDialog as TaskDialog;
-            d.Close(TaskDialogResult.CustomButtonClicked);
         }
     }
 }
