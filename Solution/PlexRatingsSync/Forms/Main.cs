@@ -9,7 +9,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
-using Microsoft.WindowsAPICodePack.Shell;
 using System.Xml.Linq;
 using System.Xml;
 using System.Xml.XPath;
@@ -22,7 +21,7 @@ namespace DS.PlexRatingsSync
     public partial class Main : Form
     {
         private bool m_LoadPlaylistsOnly = false;
-        private SQLiteConnection m_DbConnection = null;
+        private PlexDatabaseControlller m_PlexDb;
         private int m_UpdateCount = 0;
         private int m_AddCount = 0;
         private List<ItunesTrack> m_ItunesTracks = new List<ItunesTrack>();
@@ -32,6 +31,20 @@ namespace DS.PlexRatingsSync
         public Main()
         {
             InitializeComponent();
+        }
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null) components.Dispose();
+                if (m_PlexDb != null) m_PlexDb.Dispose();
+            }
+            base.Dispose(disposing);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -110,11 +123,7 @@ namespace DS.PlexRatingsSync
             label3.Text = string.Format("Plex:   {0}", Settings.PlexDatabase.EllipsisString(60));
             label4.Text = string.Format("iTunes: {0}", Settings.ItunesLibraryPath.EllipsisString(60));
 
-            if (!string.IsNullOrWhiteSpace(Settings.PlexDatabase))
-            {
-                m_DbConnection = new SQLiteConnection(string.Format("Data Source={0};Version=3;", Settings.PlexDatabase));
-                m_DbConnection.Open();
-            }
+            m_PlexDb = new PlexRatingsSync.PlexDatabaseControlller();
 
             progressBar1.Value = 0;
             m_UpdateCount = 0;
@@ -225,11 +234,6 @@ namespace DS.PlexRatingsSync
             return name;
         }
 
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            if (m_DbConnection != null) m_DbConnection.Close();
-        }
-
         private void bwProcess_DoWork(object sender, DoWorkEventArgs e)
         {
             if (Settings.SyncPlaylists) GetItunesPlayLists();
@@ -246,7 +250,7 @@ namespace DS.PlexRatingsSync
                 return;
             }
 
-            if (m_DbConnection != null) Process();
+            if (m_PlexDb.IsDbConnected) Process();
 
             if (bwProcess.CancellationPending)
             {
@@ -319,7 +323,7 @@ namespace DS.PlexRatingsSync
 
                 // Get all the accounts to store ratings against
                 sql = @"SELECT * FROM accounts;";
-                List<PlexTableAccounts> accounts = ReadPlexAndMap<PlexTableAccounts>(sql);
+                List<PlexTableAccounts> accounts = m_PlexDb.ReadPlexAndMap<PlexTableAccounts>(sql);
 
                 // Sync ratings
                 SyncRatings(accounts);
@@ -348,7 +352,7 @@ INNER JOIN metadata_items MTI ON MTI.id = MI.metadata_item_id
 INNER JOIN library_sections LS ON LS.id = MI.library_section_id
 LEFT JOIN metadata_item_settings MTIS ON MTIS.guid = MTI.guid
 WHERE LS.section_type = 8";
-            List<PlexRatingsData> ratingdata = ReadPlexAndMap<PlexRatingsData>(sql);
+            List<PlexRatingsData> ratingdata = m_PlexDb.ReadPlexAndMap<PlexRatingsData>(sql);
 
             bwProcess.ReportProgress(ratingdata.Count);
             bwProcess.ReportProgress(0, "Syncing Ratings...");
@@ -394,7 +398,7 @@ WHERE LS.section_type = 8";
                     // Delete playlist entries (ready to rebuild)
                     sql = "DELETE FROM play_queue_generators WHERE playlist_id = {0}";
                     sql = string.Format(sql, playlistId);
-                    ExecutePlexSql(sql);
+                    m_PlexDb.ExecutePlexSql(sql);
 
                     // Update the playlist back to blank
                     sql = @"
@@ -403,7 +407,7 @@ SET media_item_count = 0, duration = 0,
 updated_at = datetime('now'), extra_data = 'pv%3AdurationInSeconds=1&pv%3AsectionIDs=1'
 WHERE id = {0}";
                     sql = string.Format(sql, playlistId);
-                    ExecutePlexSql(sql);
+                    m_PlexDb.ExecutePlexSql(sql);
                 }
                 else
                 {
@@ -415,7 +419,7 @@ VALUES
 ('com.plexapp.agents.none://{0}', 15, 0, '{1}', '{1}', 
 0, 10, 0, datetime('now'), datetime('now'), datetime('now'), 'pv%3AdurationInSeconds=1&pv%3AsectionIDs=1')";
                     sql = string.Format(sql, Guid.NewGuid(), playlist.FullPlaylistName);
-                    ExecutePlexSql(sql);
+                    m_PlexDb.ExecutePlexSql(sql);
 
                     playlistId = GetPlexPlaylistId(playlist);
                 }
@@ -425,7 +429,7 @@ VALUES
                 {
                     sql = "SELECT id FROM metadata_item_accounts WHERE account_id = {0} AND metadata_item_id = {1}";
                     sql = string.Format(sql, account.id, playlistId);
-                    int? id = (int?)ReadPlexValue(sql);
+                    int? id = (int?)m_PlexDb.ReadPlexValue(sql);
 
                     if (id == null)
                     {
@@ -433,7 +437,7 @@ VALUES
 INSERT INTO metadata_item_accounts (account_id, metadata_item_id)
 VALUES ({0}, {1})";
                         sql = string.Format(sql, account.id, playlistId);
-                        ExecutePlexSql(sql);
+                        m_PlexDb.ExecutePlexSql(sql);
                     }
                 }
 
@@ -443,7 +447,7 @@ VALUES ({0}, {1})";
 
                 sql = "SELECT MAX([order]) FROM play_queue_generators WHERE playlist_id = {0}";
                 sql = string.Format(sql, playlistId);
-                int? currentOrder = ReadPlexValue(sql);
+                int? currentOrder = m_PlexDb.ReadPlexValue(sql);
                 currentOrder = currentOrder == null ? orderIncrement : currentOrder;
 
                 foreach (var item in playlist.Tracks)
@@ -455,7 +459,7 @@ FROM media_parts AS MP
 INNER JOIN media_items AS MI ON MI.id = MP.media_item_id
 WHERE MP.file = '{0}' COLLATE NOCASE";
                     sql = string.Format(sql, item.ProperLocation.Replace("'", "''"));
-                    long? dbItemID = ReadPlexValue(sql) as long?;
+                    long? dbItemID = m_PlexDb.ReadPlexValue(sql) as long?;
 
                     if (dbItemID != null)
                     {
@@ -466,7 +470,7 @@ FROM media_parts AS MP
 INNER JOIN media_items AS MI ON MI.id = MP.media_item_id
 WHERE MI.metadata_item_id = {0}";
                         sql = string.Format(sql, dbItemID);
-                        long? dbDuration = ReadPlexValue(sql) as long?;
+                        long? dbDuration = m_PlexDb.ReadPlexValue(sql) as long?;
                         if (dbDuration == null) dbDuration = 0;
 
                         // Create a new playlist entry
@@ -476,7 +480,7 @@ INSERT INTO play_queue_generators
 VALUES
 ({0}, {1}, {2}, datetime('now'), datetime('now'), '')";
                         sql = string.Format(sql, playlistId, dbItemID, currentOrder);
-                        ExecutePlexSql(sql);
+                        m_PlexDb.ExecutePlexSql(sql);
 
                         currentOrder += orderIncrement;
 
@@ -490,12 +494,12 @@ VALUES
                     sql = @"
 DELETE metadata_item_accounts WHERE metadata_item_id = {0}";
                     sql = string.Format(sql, playlistId);
-                    ExecutePlexSql(sql);
+                    m_PlexDb.ExecutePlexSql(sql);
 
                     sql = @"
 DELETE metadata_items WHERE id = {0}";
                     sql = string.Format(sql, playlistId);
-                    ExecutePlexSql(sql);
+                    m_PlexDb.ExecutePlexSql(sql);
                 }
                 else
                 {
@@ -506,7 +510,7 @@ SET duration = {0},
 media_item_count = {1}
 WHERE id = {2}";
                     sql = string.Format(sql, addDuration, playlist.Tracks.Count, playlistId);
-                    ExecutePlexSql(sql);
+                    m_PlexDb.ExecutePlexSql(sql);
                 }
 
                 if (isUpdate)
@@ -523,72 +527,9 @@ WHERE id = {2}";
             int? playlistId = null;
             string sql = "SELECT id FROM metadata_items WHERE title = '{0}' AND metadata_type = 15";    //15=PLAYLIST_TYPE
             sql = string.Format(sql, playlist.FullPlaylistName);
-            playlistId = (int?)ReadPlexValue(sql);
+            playlistId = (int?)m_PlexDb.ReadPlexValue(sql);
 
             return playlistId;
-        }
-
-        private List<T> ReadPlexAndMap<T>(string sql)
-            where T : new()
-        {
-            MessageManager.Instance.MessageWrite(this, MessageItem.MessageLevel.Debug,
-                string.Format("Executing and mapping SQL{0}{1}",
-                Environment.NewLine, sql));
-
-            List<T> data = new List<T>();
-
-            using (SQLiteCommand command = new SQLiteCommand(sql, m_DbConnection))
-            {
-                using (SQLiteDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        T item = new T();
-                        ReadFields(reader, item);
-                        data.Add(item);
-                    }
-                }
-            }
-
-            return data;
-        }
-
-        private void ExecutePlexSql(string sql)
-        {
-            MessageManager.Instance.MessageWrite(this, MessageItem.MessageLevel.Debug,
-                string.Format("Executing SQL{0}{1}",
-                Environment.NewLine, sql));
-
-            using (SQLiteCommand command = new SQLiteCommand(sql, m_DbConnection))
-            {
-                command.ExecuteNonQuery();
-            }
-        }
-
-        private dynamic ReadPlexValue(string sql)
-        {
-            MessageManager.Instance.MessageWrite(this, MessageItem.MessageLevel.Debug,
-                string.Format("Reading SQL Value{0}{1}",
-                Environment.NewLine, sql));
-
-            dynamic result = null;
-
-            using (SQLiteCommand command = new SQLiteCommand(sql, m_DbConnection))
-            {
-                using (SQLiteDataReader reader = command.ExecuteReader())
-                {
-                    if (reader.HasRows)
-                    {
-                        reader.Read();
-
-                        if (reader.IsDBNull(0))
-                            result = null;
-                        else
-                            result = reader[0];
-                    }
-                }
-            }
-            return result;
         }
 
         private void SyncRating(PlexRatingsData currentFile, List<PlexTableAccounts> accounts)
@@ -599,34 +540,39 @@ WHERE id = {2}";
                 {
                     try
                     {
-                        int? plexFileRatng = PlexRatingFromFile(currentFile.file);
+                        int? plexFileRating = RatingsManager.PlexRatingFromFile(currentFile.file);
 
                         foreach (PlexTableAccounts account in accounts)
                         {
                             int? plexDbRating = PlexRatingFromDatabase(account.id, currentFile.file);
 
-                            if (plexFileRatng != plexDbRating)
+                            if (plexFileRating != plexDbRating)
                             {
                                 string sql = string.Empty;
 
-                                if (PlexDatabaseRatingExists(account.id, currentFile.guid))
+                                // the rating(s) of a given file
+                                sql = string.Format(
+                                    @"SELECT * FROM metadata_item_settings WHERE account_id = {0} AND guid = '{1}';",
+                                    account.id, currentFile.guid);
+
+                                if (m_PlexDb.RecordsExists(sql))
                                 {
                                     MessageManager.Instance.MessageWrite(this, MessageItem.MessageLevel.Information,
                                         string.Format("Updating rating for file \"{0}\" from {1} to {2}", 
-                                        currentFile.file, plexDbRating, plexFileRatng));
+                                        currentFile.file, plexDbRating, plexFileRating));
 
                                     bwProcess.ReportProgress(-2);
 
                                     // Update a rating entry
                                     sql = @"UPDATE metadata_item_settings SET rating = {0} WHERE account_id = {1} AND guid = '{2}'";
 
-                                    sql = string.Format(sql, plexFileRatng, account.id, currentFile.guid);
+                                    sql = string.Format(sql, plexFileRating, account.id, currentFile.guid);
                                 }
                                 else
                                 {
                                     MessageManager.Instance.MessageWrite(this, MessageItem.MessageLevel.Information,
                                         string.Format("Creating rating for file \"{0}\", rating {1}",
-                                        currentFile.file, plexFileRatng));
+                                        currentFile.file, plexFileRating));
 
                                     bwProcess.ReportProgress(-3);
 
@@ -635,10 +581,10 @@ WHERE id = {2}";
 INSERT INTO metadata_item_settings ([account_id], [guid], [rating], [view_offset], [view_count], [last_viewed_at], [created_at], [updated_at])
 VALUES({0}, '{1}', {2}, NULL, 0, NULL, DATE('now'), DATE('now'));";
 
-                                    sql = string.Format(sql, account.id, currentFile.guid, plexFileRatng);
+                                    sql = string.Format(sql, account.id, currentFile.guid, plexFileRating);
                                 }
 
-                                ExecutePlexSql(sql);
+                                m_PlexDb.ExecutePlexSql(sql);
                             }
                         }
                     }
@@ -651,39 +597,6 @@ VALUES({0}, '{1}', {2}, NULL, 0, NULL, DATE('now'), DATE('now'));";
             catch (Exception ex)
             {
                 MessageManager.Instance.ExceptionWrite(this, ex);
-            }
-        }
-
-        public int? PlexRatingFromFile(string file)
-        {
-            try
-            {
-                uint? fileRating = null;
-                ShellFile so = ShellFile.FromFilePath(file);
-
-                if (so.Properties.System.Rating.Value != null)
-                    fileRating = (uint)so.Properties.System.Rating.Value;
-
-                if (fileRating == null)
-                    return null;
-
-                if (fileRating < 1)
-                    return null;
-                else if (fileRating < 13)
-                    return 2;
-                else if (fileRating < 38)
-                    return 4;
-                else if (fileRating < 63)
-                    return 6;
-                else if (fileRating < 87)
-                    return 8;
-                else
-                    return 10;
-            }
-            catch (Exception ex)
-            {
-                MessageManager.Instance.ExceptionWrite(this, ex);
-                return null;
             }
         }
 
@@ -702,54 +615,9 @@ AND MP.file = '{1}';";
 
             sql = string.Format(sql, accountId, file.Replace("'", "''"));
 
-            rating = (int?)ReadPlexValue(sql);
+            rating = (int?)m_PlexDb.ReadPlexValue(sql);
 
             return rating;
-        }
-
-        public bool PlexDatabaseRatingExists(Int64 accountId, string guid)
-        {
-            bool recordExists = false;
-
-            // the rating(s) of a given file
-            string sql = @"SELECT * FROM metadata_item_settings WHERE account_id = {0} AND guid = '{1}';";
-
-            sql = string.Format(sql, accountId, guid);
-
-            MessageManager.Instance.MessageWrite(this, MessageItem.MessageLevel.Debug,
-                string.Format("Executing SQL{0}{1}",
-                Environment.NewLine, sql));
-
-            using (SQLiteCommand command = new SQLiteCommand(sql, m_DbConnection))
-            {
-                using (SQLiteDataReader reader = command.ExecuteReader())
-                {
-                    if (reader.HasRows)
-                    {
-                        recordExists = true;
-                    }
-                }
-            }
-
-            return recordExists;
-        }
-
-        private void ReadFields(SQLiteDataReader reader, object obj)
-        {
-            Type type = obj.GetType();
-            PropertyInfo[] properties = type.GetProperties();
-
-            foreach (PropertyInfo property in properties)
-            {
-                string name = property.Name;
-                int fieldPos = reader.GetOrdinal(name);
-
-                if (fieldPos >= 0 && !reader.IsDBNull(fieldPos))
-                {
-                    dynamic fieldValue = reader[name];
-                    property.SetValue(obj, fieldValue, null);
-                }
-            }
         }
 
         private void cmdOptions_Click(object sender, EventArgs e)
@@ -768,211 +636,5 @@ AND MP.file = '{1}';";
             cmdOptions.Enabled = true;
             StartProcessing();
         }
-    }
-
-    public class ItunesPlaylist
-    {
-        public string PlaylistPersistentID { get; set; }
-        public string ParentPersistentID { get; set; }
-        public string Name { get; set; }
-        public string FullPlaylistName { get; set; }
-        public List<ItunesTrack> Tracks { get; set; }
-
-        public ItunesPlaylist()
-        {
-            Tracks = new List<ItunesTrack>();
-        }
-    }
-
-    public class ItunesTrack
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string Location { get; set; }
-
-        public string ProperLocation
-        {
-            get
-            {
-                string decoded = Uri.UnescapeDataString(Location);
-                decoded = decoded.Substring(0, 16) == "file://localhost" ? "\\" + decoded.Substring(17) : decoded;
-                decoded = decoded.Replace('/', '\\');
-                return decoded;
-            }
-        }
-    }
-
-    public class PlexRatingsData
-    {
-        public string guid { get; set; }
-        public string file { get; set; }
-        public double rating { get; set; }
-    }
-
-    public class PlexTableAccounts
-    {
-        public Int64 id { get; set; }
-        public string name { get; set; }
-        public string hashed_password { get; set; }
-        public string salt { get; set; }
-        public DateTime created_at { get; set; }
-        public DateTime updated_at { get; set; }
-        public string default_audio_language { get; set; }
-        public string default_subtitle_language { get; set; }
-        public bool auto_select_subtitle { get; set; }
-        public bool auto_select_audio { get; set; }
-    }
-
-    public class PlexTableMediaParts
-    {
-        public Int64 id { get; set; }
-        public Int64 media_item_id { get; set; }
-        public Int64 directory_id { get; set; }
-        public string hash { get; set; }
-        public string open_subtitle_hash { get; set; }
-        public string file { get; set; }
-        public Int64 index { get; set; }
-        public Int64 size { get; set; }
-        public Int64 duration { get; set; }
-        public DateTime created_at { get; set; }
-        public DateTime updated_at { get; set; }
-        public DateTime deleted_at { get; set; }
-        public string extra_data { get; set; }
-    }
-
-    public class PlexTableMediaItems
-    {
-        public Int64 id { get; set; }
-        public Int64 library_section_id { get; set; }
-        public Int64 section_location_id { get; set; }
-        public Int64 metadata_item_id { get; set; }
-        public Int64 type_id { get; set; }
-        public Int64 width { get; set; }
-        public Int64 height { get; set; }
-        public Int64 size { get; set; }
-        public Int64 duration { get; set; }
-        public Int64 bitrate { get; set; }
-        public string container { get; set; }
-        public string video_codec { get; set; }
-        public string audio_codec { get; set; }
-        public double display_aspect_ratio { get; set; }
-        public double frames_per_second { get; set; }
-        public Int64 audio_channels { get; set; }
-        public bool interlaced { get; set; }
-        public string source { get; set; }
-        public string hints { get; set; }
-        public Int64 display_offset { get; set; }
-        public string settings { get; set; }
-        public DateTime created_at { get; set; }
-        public DateTime updated_at { get; set; }
-        public bool optimized_for_streaming { get; set; }
-        public DateTime deleted_at { get; set; }
-        public Int64 media_analysis_version { get; set; }
-        public double sample_aspect_ratio { get; set; }
-        public string extra_data { get; set; }
-    }
-
-    public class PlexTableMetadataItems
-    {
-        public Int64 id { get; set; }
-        public Int64 library_section_id { get; set; }
-        public Int64 parent_id { get; set; }
-        public Int64 metadata_type { get; set; }
-        public string guid { get; set; }
-        public Int64 media_item_count { get; set; }
-        public string title { get; set; }
-        public string title_sort { get; set; }
-        public string original_title { get; set; }
-        public string studio { get; set; }
-        public double rating { get; set; }
-        public Int64 rating_count { get; set; }
-        public string tagline { get; set; }
-        public string summary { get; set; }
-        public string trivia { get; set; }
-        public string quotes { get; set; }
-        public string content_rating { get; set; }
-        public Int64 content_rating_age { get; set; }
-        public Int64 index { get; set; }
-        public Int64 absolute_index { get; set; }
-        public Int64 duration { get; set; }
-        public string user_thumb_url { get; set; }
-        public string user_art_url { get; set; }
-        public string user_banner_url { get; set; }
-        public string user_music_url { get; set; }
-        public string user_fields { get; set; }
-        public string tags_genre { get; set; }
-        public string tags_collection { get; set; }
-        public string tags_director { get; set; }
-        public string tags_writer { get; set; }
-        public string tags_star { get; set; }
-        public DateTime originally_available_at { get; set; }
-        public DateTime available_at { get; set; }
-        public DateTime expires_at { get; set; }
-        public DateTime refreshed_at { get; set; }
-        public Int64 year { get; set; }
-        public DateTime added_at { get; set; }
-        public DateTime created_at { get; set; }
-        public DateTime updated_at { get; set; }
-        public DateTime deleted_at { get; set; }
-        public string tags_country { get; set; }
-        public string extra_data { get; set; }
-    }
-
-    public class PlexTableMetadataItemSettings
-    {
-        public Int64 id { get; set; }
-        public Int64 account_id { get; set; }
-        public string guid { get; set; }
-        public double rating { get; set; }
-        public Int64 view_offset { get; set; }
-        public Int64 view_count { get; set; }
-        public DateTime last_viewed_at { get; set; }
-        public DateTime created_at { get; set; }
-        public DateTime updated_at { get; set; }
-    }
-
-    public class PlexTableDirectories
-    {
-        public Int64 id { get; set; }
-        public Int64 library_section_id { get; set; }
-        public Int64 parent_directory_id { get; set; }
-        public string path { get; set; }
-        public DateTime created_at { get; set; }
-        public DateTime updated_at { get; set; }
-        public DateTime deleted_at { get; set; }
-    }
-
-    public class PlexTableSectionLocations
-    {
-        public Int64 id { get; set; }
-        public Int64 library_section_id { get; set; }
-        public string root_path { get; set; }
-        public bool IsAvailable { get; set; }
-        public DateTime scanned_at { get; set; }
-        public DateTime created_at { get; set; }
-        public DateTime updated_at { get; set; }
-    }
-
-    public class PlexTableLibrarySections
-    {
-        public Int64 id { get; set; }
-        public Int64 library_id { get; set; }
-        public string name { get; set; }
-        public string name_sort { get; set; }
-        public Int64 section_type { get; set; }
-        public string language { get; set; }
-        public string agent { get; set; }
-        public string scanner { get; set; }
-        public string user_thumb_url { get; set; }
-        public string user_art_url { get; set; }
-        public string user_theme_music_url { get; set; }
-        public bool IsPublic { get; set; }
-        public DateTime created_at { get; set; }
-        public DateTime updated_at { get; set; }
-        public DateTime scanned_at { get; set; }
-        public bool display_secondary_level { get; set; }
-        public string user_fields { get; set; }
-        public string query_xml { get; set; }
-        public Int64 query_type { get; set; }
     }
 }
