@@ -42,29 +42,7 @@ namespace DS.PlexRatingsSync
 
             System.Reflection.AssemblyName assemblyName = assembly.GetName();
 
-#if DEBUG
-            TaskDialog dlg = new TaskDialog();
-            dlg.Caption = "Which Form";
-            dlg.StandardButtons = TaskDialogStandardButtons.Close;
-            dlg.InstructionText = "Form Type";
-            dlg.Text = "Choose whether to run the standard WinForms form or the new experimental MVVM form using ReactiveUI extensions.";
-            //dlg.Icon = TaskDialogStandardIcon.Information;
-
-            TaskDialogCommandLink tdcl = new TaskDialogCommandLink("btnWinForms", "Standard WinForms");
-            tdcl.Click += Tdcl_Click;
-            tdcl.Default = true;
-            tdcl.Instruction = "Use the standard WinForms form.";
-            dlg.Controls.Add(tdcl);
-
-            tdcl = new TaskDialogCommandLink("btnWinFormsMVVM", "MVVM WinForms");
-            tdcl.Click += Tdcl_Click;
-            tdcl.Instruction = "Use the new experimental MVVM form using RectiveUI extensions.";
-            dlg.Controls.Add(tdcl);
-
-            TaskDialogResult tdr = dlg.Show();
-#else
             Application.Run(new Main());
-#endif
         }
 
         private static void Tdcl_Click(object sender, EventArgs e)
