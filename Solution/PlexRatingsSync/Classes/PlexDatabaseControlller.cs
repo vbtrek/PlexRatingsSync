@@ -127,7 +127,6 @@ namespace DS.PlexRatingsSync
             return recordExists;
         }
 
-
         private void ReadFields(SQLiteDataReader reader, object obj)
         {
             Type type = obj.GetType();
