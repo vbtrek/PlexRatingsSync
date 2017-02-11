@@ -44,6 +44,9 @@ namespace DS.PlexRatingsSync
             grdConfig.Item[id].UseFileNameEditor = true;
             grdConfig.Item[id].FileNameFilter = "Plex Database Files|com.plexapp.plugins.library.db";
 
+            grdConfig.Item.Add("Plex Account", Settings.PlexAccount,
+                false, "General", "Plex account to sync with", true);
+
             grdConfig.Item.Add("Sync Playlists", Settings.SyncPlaylists,
                 false, "Playlists", "Sync iTunes playlist to Plex. Once enabled you will need to close and re-open the settings to choose the list of playlists you want to sync.", true);
 
@@ -80,6 +83,7 @@ namespace DS.PlexRatingsSync
         private void SavePreferences()
         {
             Settings.PlexDatabase = GetOptionValue("Plex Database").ToString();
+            Settings.PlexAccount = int.Parse(GetOptionValue("Plex Account").ToString());
 
             Settings.SyncPlaylists = bool.Parse(GetOptionValue("Sync Playlists").ToString());
             Settings.ItunesLibraryPath = GetOptionValue("iTunes Library").ToString();
