@@ -17,7 +17,15 @@ namespace DS.PlexRatingsSync
             if (!string.IsNullOrWhiteSpace(Settings.PlexDatabase))
             {
                 m_DbConnection = new SQLiteConnection(string.Format("Data Source={0};Version=3;", Settings.PlexDatabase));
-                m_DbConnection.Open();
+
+                try
+                {
+                    m_DbConnection.Open();
+                }
+                catch (Exception)
+                {
+                    m_DbConnection = null;
+                }
             }
         }
 
