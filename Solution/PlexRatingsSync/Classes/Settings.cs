@@ -23,8 +23,10 @@ namespace DS.PlexRatingsSync
             PlexDatabase = 
                 Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "PlexDatabase", "").ToString();
 
-            PlexAccount =
-                int.Parse(Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "PlexAccount", "").ToString());
+            int plexAccount;
+            bool success = int.TryParse(Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "PlexAccount", "").ToString(), out plexAccount);
+
+            if (success) PlexAccount = plexAccount;
 
             SyncRatings = bool.Parse(
                 Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "SyncRatings", "false").ToString());

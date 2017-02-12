@@ -117,6 +117,7 @@
     <Compile Include="Classes\Extensions.cs" />
     <Compile Include="Classes\Data\ItunesPlaylist.cs" />
     <Compile Include="Classes\Data\ItunesTrack.cs" />
+    <Compile Include="Classes\ItunesManager.cs" />
     <Compile Include="Classes\PlexDatabaseControlller.cs" />
     <Compile Include="Classes\Data\PlexRatingsData.cs" />
     <Compile Include="Classes\Data\PlexTableAccounts.cs" />

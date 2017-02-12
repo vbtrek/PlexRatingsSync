@@ -1,19 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Data.SQLite;
-using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Windows.Forms;
-using System.Xml.Linq;
-using System.Xml;
-using System.Xml.XPath;
-using System.Text.RegularExpressions;
-using System.Web;
 using DS.Library.MessageHandling;
 
 namespace DS.PlexRatingsSync
@@ -22,11 +11,9 @@ namespace DS.PlexRatingsSync
     {
         private bool m_LoadPlaylistsOnly = false;
         private PlexDatabaseControlller m_PlexDb;
+        private ItunesManager m_Itunes;
         private int m_UpdateCount = 0;
         private int m_AddCount = 0;
-        private List<ItunesTrack> m_ItunesTracks = new List<ItunesTrack>();
-        private List<ItunesPlaylist> m_AllItunesPlaylists = new List<ItunesPlaylist>();
-        private List<ItunesPlaylist> m_ItunesPlaylists = new List<ItunesPlaylist>();
 
         public Main()
         {
@@ -76,7 +63,7 @@ namespace DS.PlexRatingsSync
 
                 while (bwProcess.IsBusy) Application.DoEvents();
 
-                using (Options frm = new Options(m_ItunesPlaylists))
+                using (Options frm = new Options())
                 {
                     frm.ShowDialog(this);
                 }
@@ -123,7 +110,8 @@ namespace DS.PlexRatingsSync
             label3.Text = string.Format("Plex:   {0}", Settings.PlexDatabase.EllipsisString(60));
             label4.Text = string.Format("iTunes: {0}", Settings.ItunesLibraryPath.EllipsisString(60));
 
-            m_PlexDb = new PlexRatingsSync.PlexDatabaseControlller();
+            m_PlexDb = new PlexDatabaseControlller();
+            m_Itunes = new ItunesManager();
 
             progressBar1.Value = 0;
             m_UpdateCount = 0;
@@ -132,111 +120,13 @@ namespace DS.PlexRatingsSync
             bwProcess.RunWorkerAsync();
         }
 
-        private void GetItunesPlayLists()
-        {
-            if (string.IsNullOrWhiteSpace(Settings.ItunesLibraryPath)) return;
-
-            bwProcess.ReportProgress(0, "Reading Playlists from iTunes...");
-            
-            string xpath = "/plist/dict/dict/dict";
-
-            XPathDocument docNav = new XPathDocument(Settings.ItunesLibraryPath);
-            XPathNavigator nav = docNav.CreateNavigator();
-            XPathExpression expr = nav.Compile(xpath);
-            XPathNodeIterator nodes = nav.Select(expr);
-
-            XmlReaderSettings set2 = new XmlReaderSettings();
-            set2.ConformanceLevel = ConformanceLevel.Fragment;
-
-            m_ItunesTracks.Clear();
-
-            foreach (XPathNavigator node in nodes)
-            {
-                XPathDocument doc2 = new XPathDocument(
-                    XmlReader.Create(new StringReader(node.InnerXml), set2));
-
-                XPathNavigator nav2 = doc2.CreateNavigator();
-
-                ItunesTrack track = new ItunesTrack();
-                track.Id = nav2.SelectSingleNode("key[.='Track ID']/following-sibling::*").ValueAsInt;
-                track.Name = nav2.SelectSingleNode("key[.='Name']/following-sibling::*").ToString();
-                track.Location = nav2.SelectSingleNode("key[.='Location']/following-sibling::*").ToString();
-                m_ItunesTracks.Add(track);
-            }
-
-
-            xpath = "/plist/dict/array/dict";
-
-            expr = nav.Compile(xpath);
-            nodes = nav.Select(expr);
-
-            m_ItunesPlaylists.Clear();
-
-            foreach (XPathNavigator node in nodes)
-            {
-                if (!node.InnerXml.Contains("<key>Master</key>")
-                    && !node.InnerXml.Contains("<key>Distinguished Kind</key>"))
-                {
-                    XPathDocument doc2 = new XPathDocument(
-                        XmlReader.Create(new StringReader(node.InnerXml), set2));
-
-                    XPathNavigator nav2 = doc2.CreateNavigator();
-
-                    // TODO Need to build a path reading "Playlist Persistent ID" and "Parent Persistent ID"
-                    ItunesPlaylist playlist = new ItunesPlaylist();
-                    playlist.PlaylistPersistentID = nav2.SelectSingleNode("key[.='Playlist Persistent ID']/following-sibling::*")?.ToString();
-                    playlist.ParentPersistentID = nav2.SelectSingleNode("key[.='Parent Persistent ID']/following-sibling::*")?.ToString();
-                    playlist.Name = nav2.SelectSingleNode("key[.='Name']/following-sibling::*").ToString();
-                    playlist.FullPlaylistName = FullPlaylistName(playlist);
-
-                    m_AllItunesPlaylists.Add(playlist);
-
-                    if (!node.InnerXml.Contains("<key>Folder</key>"))
-                    {
-                        var trackListXml = nav2.Select("key[.='Playlist Items']/following-sibling::*");
-
-                        trackListXml.MoveNext();
-                        string tracksXml = trackListXml.Current.InnerXml;
-
-                        doc2 = new XPathDocument(XmlReader.Create(new StringReader(tracksXml), set2));
-                        nav2 = doc2.CreateNavigator();
-
-                        var trackIdList = nav2.Select("dict/key[.='Track ID']/following-sibling::*");
-
-                        while (trackIdList.MoveNext())
-                        {
-                            int trackId = trackIdList.Current.ValueAsInt;
-                            ItunesTrack track = m_ItunesTracks.FirstOrDefault(t => t.Id == trackId);
-
-                            if (track != null) playlist.Tracks.Add(track);
-                        }
-
-                        //ItunesTrack track = m_ItunesTracks.Find(t=>t.Id==)
-                        //playlist.Tracks.Add(track);
-
-                        m_ItunesPlaylists.Add(playlist);
-                    }
-                }
-            }
-        }
-
-        public string FullPlaylistName(ItunesPlaylist playlist)
-        {
-            string name = playlist.Name;
-
-            if (!string.IsNullOrWhiteSpace(playlist.ParentPersistentID))
-            {
-                ItunesPlaylist parent = m_AllItunesPlaylists.FirstOrDefault(p => p.PlaylistPersistentID == playlist.ParentPersistentID);
-
-                if (parent != null) name = string.Format("{0} - {1}", FullPlaylistName(parent), name);
-            }
-
-            return name;
-        }
-
         private void bwProcess_DoWork(object sender, DoWorkEventArgs e)
         {
-            if (Settings.SyncPlaylists) GetItunesPlayLists();
+            if (Settings.SyncPlaylists)
+            {
+                bwProcess.ReportProgress(0, "Reading Playlists from iTunes...");
+                m_Itunes.GetItunesPlayLists(Settings.ItunesLibraryPath);
+            }
 
             if (m_LoadPlaylistsOnly)
             {
@@ -380,7 +270,7 @@ WHERE LS.section_type = 8";
             bwProcess.ReportProgress(-4);
             bwProcess.ReportProgress(0, "Syncing Playlists...");
 
-            foreach (var playlist in m_ItunesPlaylists)
+            foreach (var playlist in m_Itunes.ItunesPlaylists)
             {
                 if (bwProcess.CancellationPending) return;
 
@@ -630,7 +520,7 @@ AND MP.file = '{1}';";
             while (bwProcess.IsBusy)
                 Application.DoEvents();
 
-            using (Options frm = new Options(m_ItunesPlaylists))
+            using (Options frm = new Options())
             {
                 frm.ShowDialog(this);
             }
