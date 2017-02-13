@@ -12,11 +12,11 @@ namespace DS.PlexRatingsSync
     {
         private SQLiteConnection m_DbConnection = null;
 
-        public PlexDatabaseControlller()
+        public PlexDatabaseControlller(string database)
         {
-            if (!string.IsNullOrWhiteSpace(Settings.PlexDatabase))
+            if (!string.IsNullOrWhiteSpace(database))
             {
-                m_DbConnection = new SQLiteConnection(string.Format("Data Source={0};Version=3;", Settings.PlexDatabase));
+                m_DbConnection = new SQLiteConnection(string.Format("Data Source={0};Version=3;", database));
 
                 try
                 {
@@ -26,6 +26,10 @@ namespace DS.PlexRatingsSync
                 {
                     m_DbConnection = null;
                 }
+            }
+            else
+            {
+                m_DbConnection = null;
             }
         }
 
