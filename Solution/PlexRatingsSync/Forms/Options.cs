@@ -22,7 +22,7 @@ namespace DS.PlexRatingsSync
 
         private void Options_Load(object sender, EventArgs e)
         {
-            m_Itunes.GetItunesPlayLists(Settings.ItunesLibraryPath);
+            m_Itunes.GetItunesPlayLists(Settings.ItunesLibraryPath, false);
             GetPreferences();
         }
 
@@ -49,27 +49,27 @@ namespace DS.PlexRatingsSync
             //grdConfig.Item[id].IsDropdownResizable = true;
 
             grdConfig.Item.Add("Sync Playlists", Settings.SyncPlaylists,
-                false, "Playlists", "Sync iTunes playlist to Plex. Once enabled you will need to close and re-open the settings to choose the list of playlists you want to sync.", true);
+                false, "Playlist Sync", "Sync iTunes playlist to Plex. Once enabled you will need to close and re-open the settings to choose the list of playlists you want to sync.", true);
 
             id = grdConfig.Item.Add("iTunes Library", Settings.ItunesLibraryPath,
-                false, "Playlists", " iTunes XML Location ", true);
+                false, "Playlist Sync", " iTunes XML Location ", true);
             grdConfig.Item[id].UseFileNameEditor = true;
             grdConfig.Item[id].FileNameFilter = "iTunes Library Files|*.xml";
 
             grdConfig.Item.Add("Remove Empty Playlists", Settings.RemoveEmptyPlaylists,
-                false, "Playlists", "Remove empty playlists from plex", true);
+                false, "Playlist Sync", "Remove empty playlists from plex", true);
 
             AddPlaylists();
 
             grdConfig.Item.Add("Sync Ratings", Settings.SyncRatings,
-                false, "Ratings", "Sync Ratings from files to Plex", true);
+                false, "Rating Sync", "Sync Ratings from files to Plex", true);
 
             grdConfig.Refresh();
 
             SetPropertyVisibility(null);
 
             GetOption("Sync Playlists").Select();
-
+            
             grdConfig.PerformLayout();
         }
 
@@ -96,24 +96,26 @@ namespace DS.PlexRatingsSync
 
         private void SavePreferences()
         {
-            Settings.PlexDatabase = GetOptionValue("Plex Database").ToString();
-            Settings.PlexAccount = int.Parse(GetOptionValue("Plex Account").ToString());
+            bool result;
 
-            Settings.SyncPlaylists = bool.Parse(GetOptionValue("Sync Playlists").ToString());
-            Settings.ItunesLibraryPath = GetOptionValue("iTunes Library").ToString();
-            Settings.RemoveEmptyPlaylists = bool.Parse(GetOptionValue("Remove Empty Playlists").ToString());
+            Settings.PlexDatabase = GetPropertyValue("Plex Database");
+            Settings.PlexAccount = GetPropertyValue("Plex Account");
+
+            Settings.SyncPlaylists = bool.TryParse(GetPropertyValue("Sync Playlists"), out result) ? result : false;
+            Settings.ItunesLibraryPath = GetPropertyValue("iTunes Library");
+            Settings.RemoveEmptyPlaylists = bool.TryParse(GetPropertyValue("Remove Empty Playlists"), out result) ? result : false;
 
             Settings.ChosenPlaylists.Clear();
 
             foreach (var playlist in m_Itunes.ItunesPlaylists)
             {
-                if (GetOptionValue(playlist.FullPlaylistName) != null && (bool)GetOptionValue(playlist.FullPlaylistName) == true)
-                {
+                bool playlistSetting = bool.TryParse(GetPropertyValue(playlist.FullPlaylistName), out result) ? result : false;
+
+                if (playlistSetting)
                     Settings.ChosenPlaylists.Add(playlist.FullPlaylistName);
-                }
             }
 
-            Settings.SyncRatings = bool.Parse(GetOptionValue("Sync Ratings").ToString());
+            Settings.SyncRatings = bool.TryParse(GetPropertyValue("Sync Ratings"), out result) ? result : false;
 
             Settings.SavePreferences();
         }
@@ -126,7 +128,7 @@ namespace DS.PlexRatingsSync
                 {
                     case "iTunes Library":
                         // Read playlists
-                        m_Itunes.GetItunesPlayLists(changedItem.Value.ToString());
+                        m_Itunes.GetItunesPlayLists(changedItem.Value.ToString(), false);
                         AddPlaylists();
                         break;
                     case "Plex Database":
@@ -138,14 +140,14 @@ namespace DS.PlexRatingsSync
 
             GridItem exportItem = GetOption("Sync Playlists");
 
-            List<string> exportRelatedItems = m_Itunes.ItunesPlaylists.ConvertAll(i => i.Name);
+            List<string> exportRelatedItems = m_Itunes.ItunesPlaylists.ConvertAll(i => i.FullPlaylistName);
             exportRelatedItems.Add("Remove Empty Playlists");
             exportRelatedItems.Add("iTunes Library");
 
             foreach (CustomProperty item in grdConfig.Item)
             {
                 if (exportRelatedItems.Contains(item.Name))
-                    item.IsReadOnly = !bool.Parse(exportItem.Value.ToString());
+                    item.Visible = bool.Parse(exportItem.Value.ToString());
             }
 
             grdConfig.Refresh();
@@ -153,11 +155,13 @@ namespace DS.PlexRatingsSync
 
         private List<PlexTableAccounts> GetPlexAccounts()
         {
-            PlexDatabaseControlller plex = new PlexDatabaseControlller();
+            PlexDatabaseControlller plex = new PlexDatabaseControlller(GetProperty("Plex Database").Value.ToString());
 
             if (plex.IsDbConnected)
             {
-                string sql = @"SELECT * FROM accounts;";
+                string sql = @"SELECT id, 'Master' AS name FROM accounts WHERE id = 0
+UNION ALL
+SELECT id, name FROM accounts WHERE id > 0;";
                 return plex.ReadPlexAndMap<PlexTableAccounts>(sql);
             }
 
@@ -175,6 +179,17 @@ namespace DS.PlexRatingsSync
             return null;
         }
 
+        private string GetPropertyValue(string optionName)
+        {
+            CustomProperty prop = GetProperty(optionName);
+            if (prop == null) return string.Empty;
+
+            if (prop.Visible)
+                return prop.Value.ToString();
+            else
+                return string.Empty;
+        }
+
         private GridItem GetOption(string optionName)
         {
             GridItem gi = grdConfig.EnumerateAllItems().FirstOrDefault(i =>
@@ -184,17 +199,6 @@ namespace DS.PlexRatingsSync
             if (gi == null) throw new ArgumentException(optionName + " doesn't exist");
 
             return gi;
-        }
-
-        private object GetOptionValue(string optionName)
-        {
-            GridItem gi = grdConfig.EnumerateAllItems().FirstOrDefault(i =>
-                              i.PropertyDescriptor != null &&
-                              i.PropertyDescriptor.Name == optionName);
-
-            if (gi == null) return null;
-
-            return gi.Value;
         }
     }
 }

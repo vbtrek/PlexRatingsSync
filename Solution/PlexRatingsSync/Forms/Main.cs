@@ -4,12 +4,15 @@ using System.ComponentModel;
 using System.IO;
 using System.Windows.Forms;
 using DS.Library.MessageHandling;
+using System.Diagnostics;
+using Microsoft.WindowsAPICodePack.Shell;
+using System.Threading;
 
 namespace DS.PlexRatingsSync
 {
     public partial class Main : Form
     {
-        private bool m_LoadPlaylistsOnly = false;
+        private AutoResetEvent m_ResetEvent = new AutoResetEvent(false);
         private PlexDatabaseControlller m_PlexDb;
         private ItunesManager m_Itunes;
         private int m_UpdateCount = 0;
@@ -58,11 +61,6 @@ namespace DS.PlexRatingsSync
             {
                 cmdOptions.Enabled = false;
 
-                m_LoadPlaylistsOnly = true;
-                StartProcessing();
-
-                while (bwProcess.IsBusy) Application.DoEvents();
-
                 using (Options frm = new Options())
                 {
                     frm.ShowDialog(this);
@@ -79,6 +77,12 @@ namespace DS.PlexRatingsSync
                 Close();
         }
 
+        private void Main_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            bwProcess.CancelAsync();
+            m_ResetEvent.WaitOne();
+        }
+
         private bool IsSettingValid()
         {
             bool settingsOk = true;
@@ -87,7 +91,7 @@ namespace DS.PlexRatingsSync
             if (!File.Exists(Settings.PlexDatabase)) settingsOk = false;
             if (!Settings.SyncRatings && !Settings.SyncPlaylists) settingsOk = false;
             if (Settings.SyncPlaylists && string.IsNullOrWhiteSpace(Settings.ItunesLibraryPath)) settingsOk = false;
-            if (!File.Exists(Settings.ItunesLibraryPath)) settingsOk = false;
+            if (Settings.SyncPlaylists && !File.Exists(Settings.ItunesLibraryPath)) settingsOk = false;
 
             return settingsOk;
         }
@@ -110,7 +114,7 @@ namespace DS.PlexRatingsSync
             label3.Text = string.Format("Plex:   {0}", Settings.PlexDatabase.EllipsisString(60));
             label4.Text = string.Format("iTunes: {0}", Settings.ItunesLibraryPath.EllipsisString(60));
 
-            m_PlexDb = new PlexDatabaseControlller();
+            m_PlexDb = new PlexDatabaseControlller(Settings.PlexDatabase);
             m_Itunes = new ItunesManager();
 
             progressBar1.Value = 0;
@@ -122,31 +126,15 @@ namespace DS.PlexRatingsSync
 
         private void bwProcess_DoWork(object sender, DoWorkEventArgs e)
         {
-            if (Settings.SyncPlaylists)
-            {
-                bwProcess.ReportProgress(0, "Reading Playlists from iTunes...");
-                m_Itunes.GetItunesPlayLists(Settings.ItunesLibraryPath);
-            }
-
-            if (m_LoadPlaylistsOnly)
-            {
+            if (!e.Cancel && bwProcess.CancellationPending)
                 e.Cancel = true;
-                return;
-            }
 
-            if (bwProcess.CancellationPending)
-            {
+            if (!e.Cancel && m_PlexDb.IsDbConnected) Process();
+
+            if (!e.Cancel && bwProcess.CancellationPending)
                 e.Cancel = true;
-                return;
-            }
 
-            if (m_PlexDb.IsDbConnected) Process();
-
-            if (bwProcess.CancellationPending)
-            {
-                e.Cancel = true;
-                return;
-            }
+            m_ResetEvent.Set();
         }
 
         private void bwProcess_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -211,16 +199,11 @@ namespace DS.PlexRatingsSync
             {
                 string sql = string.Empty;
 
-                // Get all the accounts to store ratings against
-// TODO_DS Add an option to choose the Plex account to sync
-                sql = @"SELECT * FROM accounts WHERE id = 1;";
-                List<PlexTableAccounts> accounts = m_PlexDb.ReadPlexAndMap<PlexTableAccounts>(sql);
-
                 // Sync ratings
-                SyncRatings(accounts);
+                SyncRatings();
 
                 // Now sync playlists
-                SyncPlaylists(accounts);
+                SyncPlaylists();
             }
             catch (Exception ex)
             {
@@ -228,7 +211,7 @@ namespace DS.PlexRatingsSync
             }
         }
 
-        private void SyncRatings(List<PlexTableAccounts> accounts)
+        private void SyncRatings()
         {
             if (!Settings.SyncRatings) return;
 
@@ -242,8 +225,10 @@ FROM media_items MI
 INNER JOIN media_parts MP ON MP.media_item_id = MI.id
 INNER JOIN metadata_items MTI ON MTI.id = MI.metadata_item_id
 INNER JOIN library_sections LS ON LS.id = MI.library_section_id
-LEFT JOIN metadata_item_settings MTIS ON MTIS.guid = MTI.guid AND MTIS.account_id = 1
+LEFT JOIN metadata_item_settings MTIS ON MTIS.guid = MTI.guid AND MTIS.account_id = {0}
 WHERE LS.section_type = 8";
+            sql = string.Format(sql, Settings.PlexAccountId);
+
             List<PlexRatingsData> ratingdata = m_PlexDb.ReadPlexAndMap<PlexRatingsData>(sql);
 
             bwProcess.ReportProgress(ratingdata.Count);
@@ -256,15 +241,20 @@ WHERE LS.section_type = 8";
 
                 bwProcess.ReportProgress(0, $"Syncing \"{new FileInfo(file.file).Name}\"...");
 
-                SyncRating(file, accounts);
+                SyncRating(file);
 
                 bwProcess.ReportProgress(-1);
             }
         }
 
-        private void SyncPlaylists(List<PlexTableAccounts> accounts)
+        private void SyncPlaylists()
         {
+            if (bwProcess.CancellationPending) return;
+
             if (!Settings.SyncPlaylists) return;
+
+            bwProcess.ReportProgress(0, "Reading Playlists from iTunes...");
+            m_Itunes.GetItunesPlayLists(Settings.ItunesLibraryPath, true);
 
             bwProcess.ReportProgress(Settings.ChosenPlaylists.Count);
             bwProcess.ReportProgress(-4);
@@ -290,7 +280,11 @@ WHERE LS.section_type = 8";
                     // Delete playlist entries (ready to rebuild)
                     sql = "DELETE FROM play_queue_generators WHERE playlist_id = {0}";
                     sql = string.Format(sql, playlistId);
+#if DEBUG
+                    Debug.Print(sql);
+#else
                     m_PlexDb.ExecutePlexSql(sql);
+#endif
 
                     // Update the playlist back to blank
                     sql = @"
@@ -299,7 +293,11 @@ SET media_item_count = 0, duration = 0,
 updated_at = datetime('now'), extra_data = 'pv%3AdurationInSeconds=1&pv%3AsectionIDs=1'
 WHERE id = {0}";
                     sql = string.Format(sql, playlistId);
+#if DEBUG
+                    Debug.Print(sql);
+#else
                     m_PlexDb.ExecutePlexSql(sql);
+#endif
                 }
                 else
                 {
@@ -311,26 +309,31 @@ VALUES
 ('com.plexapp.agents.none://{0}', 15, 0, '{1}', '{1}', 
 0, 10, 0, datetime('now'), datetime('now'), datetime('now'), 'pv%3AdurationInSeconds=1&pv%3AsectionIDs=1')";
                     sql = string.Format(sql, Guid.NewGuid(), playlist.FullPlaylistName);
+#if DEBUG
+                    Debug.Print(sql);
+#else
                     m_PlexDb.ExecutePlexSql(sql);
+#endif
 
                     playlistId = GetPlexPlaylistId(playlist);
                 }
 
                 // Ensure there is a metadata_item_accounts record for each playlist
-                foreach (PlexTableAccounts account in accounts)
-                {
-                    sql = "SELECT id FROM metadata_item_accounts WHERE account_id = {0} AND metadata_item_id = {1}";
-                    sql = string.Format(sql, account.id, playlistId);
-                    int? id = (int?)m_PlexDb.ReadPlexValue(sql);
+                sql = "SELECT id FROM metadata_item_accounts WHERE account_id = {0} AND metadata_item_id = {1}";
+                sql = string.Format(sql, Settings.PlexAccountId, playlistId);
+                int? id = (int?)m_PlexDb.ReadPlexValue(sql);
 
-                    if (id == null)
-                    {
-                        sql = @"
+                if (id == null)
+                {
+                    sql = @"
 INSERT INTO metadata_item_accounts (account_id, metadata_item_id)
 VALUES ({0}, {1})";
-                        sql = string.Format(sql, account.id, playlistId);
-                        m_PlexDb.ExecutePlexSql(sql);
-                    }
+                    sql = string.Format(sql, Settings.PlexAccountId, playlistId);
+#if DEBUG
+                    Debug.Print(sql);
+#else
+                    m_PlexDb.ExecutePlexSql(sql);
+#endif
                 }
 
                 // Insert the items into the playlist
@@ -339,7 +342,7 @@ VALUES ({0}, {1})";
 
                 sql = "SELECT MAX([order]) FROM play_queue_generators WHERE playlist_id = {0}";
                 sql = string.Format(sql, playlistId);
-                int? currentOrder = m_PlexDb.ReadPlexValue(sql);
+                double? currentOrder = m_PlexDb.ReadPlexValue(sql);
                 currentOrder = currentOrder == null ? orderIncrement : currentOrder;
 
                 foreach (var item in playlist.Tracks)
@@ -372,7 +375,11 @@ INSERT INTO play_queue_generators
 VALUES
 ({0}, {1}, {2}, datetime('now'), datetime('now'), '')";
                         sql = string.Format(sql, playlistId, dbItemID, currentOrder);
+#if DEBUG
+                        Debug.Print(sql);
+#else
                         m_PlexDb.ExecutePlexSql(sql);
+#endif
 
                         currentOrder += orderIncrement;
 
@@ -386,12 +393,20 @@ VALUES
                     sql = @"
 DELETE metadata_item_accounts WHERE metadata_item_id = {0}";
                     sql = string.Format(sql, playlistId);
+#if DEBUG
+                    Debug.Print(sql);
+#else
                     m_PlexDb.ExecutePlexSql(sql);
+#endif
 
                     sql = @"
 DELETE metadata_items WHERE id = {0}";
                     sql = string.Format(sql, playlistId);
+#if DEBUG
+                    Debug.Print(sql);
+#else
                     m_PlexDb.ExecutePlexSql(sql);
+#endif
                 }
                 else
                 {
@@ -402,7 +417,11 @@ SET duration = {0},
 media_item_count = {1}
 WHERE id = {2}";
                     sql = string.Format(sql, addDuration, playlist.Tracks.Count, playlistId);
+#if DEBUG
+                    Debug.Print(sql);
+#else
                     m_PlexDb.ExecutePlexSql(sql);
+#endif
                 }
 
                 if (isUpdate)
@@ -424,7 +443,7 @@ WHERE id = {2}";
             return playlistId;
         }
 
-        private void SyncRating(PlexRatingsData currentFile, List<PlexTableAccounts> accounts)
+        private void SyncRating(PlexRatingsData currentFile)
         {
             try
             {
@@ -433,51 +452,15 @@ WHERE id = {2}";
                     try
                     {
                         int? plexFileRating = RatingsManager.PlexRatingFromFile(currentFile.file);
+                        int? plexDbRating = (int?)currentFile.rating;
 
-                        foreach (PlexTableAccounts account in accounts)
+                        if (plexFileRating != plexDbRating)
                         {
-                            int? plexDbRating = PlexRatingFromDatabase(account.id, currentFile.file);
-
-                            if (plexFileRating != plexDbRating)
-                            {
-                                string sql = string.Empty;
-
-                                // the rating(s) of a given file
-                                sql = string.Format(
-                                    @"SELECT * FROM metadata_item_settings WHERE account_id = {0} AND guid = '{1}';",
-                                    account.id, currentFile.guid);
-
-                                if (m_PlexDb.RecordsExists(sql))
-                                {
-                                    MessageManager.Instance.MessageWrite(this, MessageItem.MessageLevel.Information,
-                                        string.Format("Updating rating for file \"{0}\" from {1} to {2}", 
-                                        currentFile.file, plexDbRating, plexFileRating));
-
-                                    bwProcess.ReportProgress(-2);
-
-                                    // Update a rating entry
-                                    sql = @"UPDATE metadata_item_settings SET rating = {0} WHERE account_id = {1} AND guid = '{2}'";
-
-                                    sql = string.Format(sql, plexFileRating, account.id, currentFile.guid);
-                                }
-                                else
-                                {
-                                    MessageManager.Instance.MessageWrite(this, MessageItem.MessageLevel.Information,
-                                        string.Format("Creating rating for file \"{0}\", rating {1}",
-                                        currentFile.file, plexFileRating));
-
-                                    bwProcess.ReportProgress(-3);
-
-                                    // Create a rating entry
-                                    sql = @"
-INSERT INTO metadata_item_settings ([account_id], [guid], [rating], [view_offset], [view_count], [last_viewed_at], [created_at], [updated_at])
-VALUES({0}, '{1}', {2}, NULL, 0, NULL, DATE('now'), DATE('now'));";
-
-                                    sql = string.Format(sql, account.id, currentFile.guid, plexFileRating);
-                                }
-
-                                m_PlexDb.ExecutePlexSql(sql);
-                            }
+                            // NOTE: Plex wins if both the file and db have ratings that are different
+                            if (plexDbRating != null)
+                                UpdateFileRating(currentFile);
+                            else
+                                UpdatePlexDbRating(currentFile);
                         }
                     }
                     catch (Exception ex)
@@ -492,33 +475,91 @@ VALUES({0}, '{1}', {2}, NULL, 0, NULL, DATE('now'), DATE('now'));";
             }
         }
 
-        public int? PlexRatingFromDatabase(Int64 accountId, string file)
+        private void UpdatePlexDbRating(PlexRatingsData currentFile)
         {
-            int? rating = null;
+            int? plexFileRating = RatingsManager.PlexRatingFromFile(currentFile.file);
+            int? plexDbRating = (int?)currentFile.rating;
+
+            string sql = string.Empty;
+            string message = string.Empty;
 
             // the rating(s) of a given file
-            string sql = @"SELECT MTIS.rating
-FROM metadata_item_settings MTIS
-INNER JOIN metadata_items MTI ON MTI.guid = MTIS.guid
-INNER JOIN media_items MI ON MI.metadata_item_id = MTI.id
-INNER JOIN media_parts MP ON MP.id = MI.id
-WHERE MTIS.account_id = {0}
-AND MP.file = '{1}';";
+            sql = string.Format(
+                @"SELECT * FROM metadata_item_settings WHERE account_id = {0} AND guid = '{1}';",
+                Settings.PlexAccountId, currentFile.guid);
 
-            sql = string.Format(sql, accountId, file.Replace("'", "''"));
+            if (m_PlexDb.RecordsExists(sql))
+            {
+                message = string.Format("Updating Plex rating for file \"{0}\" from {1} to {2}",
+                    currentFile.file, 
+                    plexDbRating == null ? 0 : plexDbRating, 
+                    plexFileRating == null ? 0 : plexFileRating);
 
-            rating = (int?)m_PlexDb.ReadPlexValue(sql);
+                MessageManager.Instance.MessageWrite(this, MessageItem.MessageLevel.Information,
+                    message);
 
-            return rating;
+                bwProcess.ReportProgress(-2);
+
+                // Update a rating entry
+                sql = @"
+UPDATE metadata_item_settings SET rating = {0} WHERE account_id = {1} AND guid = '{2}'";
+
+                sql = string.Format(sql, plexFileRating, Settings.PlexAccountId, currentFile.guid);
+            }
+            else
+            {
+                message = string.Format("Creating Plex rating for file \"{0}\", rating {1}",
+                    currentFile.file, 
+                    plexFileRating == null ? 0 : plexFileRating);
+
+                MessageManager.Instance.MessageWrite(this, MessageItem.MessageLevel.Information,
+                    message);
+
+                bwProcess.ReportProgress(-3);
+
+                // Create a rating entry
+                sql = @"
+INSERT INTO metadata_item_settings ([account_id], [guid], [rating], [view_offset], [view_count], [last_viewed_at], [created_at], [updated_at])
+VALUES({0}, '{1}', {2}, NULL, 0, NULL, DATE('now'), DATE('now'));";
+
+                sql = string.Format(sql, Settings.PlexAccountId, currentFile.guid, plexFileRating);
+            }
+#if DEBUG
+            Debug.Print(message);
+#else
+            m_PlexDb.ExecutePlexSql(sql);
+#endif
+        }
+
+        private void UpdateFileRating(PlexRatingsData currentFile)
+        {
+            uint? fileRating = RatingsManager.FileRating(currentFile.file);
+            int? plexFileRating = RatingsManager.PlexRatingFromFile(currentFile.file);
+            int? plexDbRating = (int?)currentFile.rating;
+
+            uint? newRating = Convert.ToUInt32(RatingsManager.FileRatingFromPlexRating(plexDbRating));
+            if (newRating == 0) newRating = null;
+
+            string message = string.Format("Updating file rating for file \"{0}\", from {1} to {2}",
+                currentFile.file,
+                fileRating == null ? 0 : fileRating,
+                newRating == null ? 0 : newRating);
+
+            ShellFile so = ShellFile.FromFilePath(currentFile.file);
+#if DEBUG
+            Debug.Print(message);
+#else
+            so.Properties.System.Rating.Value = newRating;
+#endif
+
+            MessageManager.Instance.MessageWrite(this, MessageItem.MessageLevel.Information, message);
         }
 
         private void cmdOptions_Click(object sender, EventArgs e)
         {
             cmdOptions.Enabled = false;
             bwProcess.CancelAsync();
-
-            while (bwProcess.IsBusy)
-                Application.DoEvents();
+            m_ResetEvent.WaitOne();
 
             using (Options frm = new Options())
             {

@@ -15,7 +15,7 @@ namespace DS.PlexRatingsSync
         private List<ItunesPlaylist> m_AllItunesPlaylists = new List<ItunesPlaylist>();
         private List<ItunesPlaylist> m_ItunesPlaylists = new List<ItunesPlaylist>();
 
-        public void GetItunesPlayLists(string itunesLibrary)
+        public void GetItunesPlayLists(string itunesLibrary, bool includeTracks)
         {
             m_ItunesTracks = new List<ItunesTrack>();
             m_AllItunesPlaylists = new List<ItunesPlaylist>();
@@ -26,48 +26,60 @@ namespace DS.PlexRatingsSync
 
             Cursor.Current = Cursors.WaitCursor;
 
+            XmlReaderSettings docSettings = new XmlReaderSettings();
+            docSettings.XmlResolver = null;
+            docSettings.DtdProcessing = DtdProcessing.Ignore;
+            var xmlReader = XmlTextReader.Create(itunesLibrary, docSettings);
+            XPathDocument docNav = new XPathDocument(xmlReader);
+
             // Get Itunes Tracks
-            string xpath = "/plist/dict/dict/dict";
-
-            XPathDocument docNav = new XPathDocument(itunesLibrary);
-            XPathNavigator nav = docNav.CreateNavigator();
-            XPathExpression expr = nav.Compile(xpath);
-            XPathNodeIterator nodes = nav.Select(expr);
-
-            XmlReaderSettings set2 = new XmlReaderSettings();
-            set2.ConformanceLevel = ConformanceLevel.Fragment;
-
-            m_ItunesTracks.Clear();
-
-            foreach (XPathNavigator node in nodes)
+            if (includeTracks)
             {
-                XPathDocument doc2 = new XPathDocument(
-                    XmlReader.Create(new StringReader(node.InnerXml), set2));
+                string trackXpath = "/plist/dict/dict/dict";
 
-                XPathNavigator nav2 = doc2.CreateNavigator();
+                XPathNavigator trackNav = docNav.CreateNavigator();
+                XPathExpression trackExpr = trackNav.Compile(trackXpath);
+                XPathNodeIterator trackNodes = trackNav.Select(trackExpr);
 
-                ItunesTrack track = new ItunesTrack();
-                track.Id = nav2.SelectSingleNode("key[.='Track ID']/following-sibling::*").ValueAsInt;
-                track.Name = nav2.SelectSingleNode("key[.='Name']/following-sibling::*").ToString();
-                track.Location = nav2.SelectSingleNode("key[.='Location']/following-sibling::*").ToString();
-                m_ItunesTracks.Add(track);
+                XmlReaderSettings trackSet2 = new XmlReaderSettings();
+                trackSet2.ConformanceLevel = ConformanceLevel.Fragment;
+
+                m_ItunesTracks.Clear();
+
+                foreach (XPathNavigator node in trackNodes)
+                {
+                    XPathDocument doc2 = new XPathDocument(
+                        XmlReader.Create(new StringReader(node.InnerXml), trackSet2));
+
+                    XPathNavigator nav2 = doc2.CreateNavigator();
+
+                    ItunesTrack track = new ItunesTrack();
+                    track.Id = nav2.SelectSingleNode("key[.='Track ID']/following-sibling::*").ValueAsInt;
+                    track.Name = nav2.SelectSingleNode("key[.='Name']/following-sibling::*").ToString();
+                    track.Location = nav2.SelectSingleNode("key[.='Location']/following-sibling::*").ToString();
+                    m_ItunesTracks.Add(track);
+                }
             }
 
             // Get Itunes playlists
-            xpath = "/plist/dict/array/dict";
+            string playlistXpath = "/plist/dict/array/dict";
 
-            expr = nav.Compile(xpath);
-            nodes = nav.Select(expr);
+            XPathNavigator playlistNav = docNav.CreateNavigator();
+            XPathExpression playlistExpr = playlistNav.Compile(playlistXpath);
+            XPathNodeIterator playlistNodes = playlistNav.Select(playlistExpr);
+
+            XmlReaderSettings playlistSet2 = new XmlReaderSettings();
+            playlistSet2.ConformanceLevel = ConformanceLevel.Fragment;
 
             m_ItunesPlaylists.Clear();
 
-            foreach (XPathNavigator node in nodes)
+            foreach (XPathNavigator node in playlistNodes)
             {
                 if (!node.InnerXml.Contains("<key>Master</key>")
                     && !node.InnerXml.Contains("<key>Distinguished Kind</key>"))
                 {
                     XPathDocument doc2 = new XPathDocument(
-                        XmlReader.Create(new StringReader(node.InnerXml), set2));
+                        XmlReader.Create(new StringReader(node.InnerXml), playlistSet2));
 
                     XPathNavigator nav2 = doc2.CreateNavigator();
 
@@ -82,22 +94,25 @@ namespace DS.PlexRatingsSync
 
                     if (!node.InnerXml.Contains("<key>Folder</key>"))
                     {
-                        var trackListXml = nav2.Select("key[.='Playlist Items']/following-sibling::*");
-
-                        trackListXml.MoveNext();
-                        string tracksXml = trackListXml.Current.InnerXml;
-
-                        doc2 = new XPathDocument(XmlReader.Create(new StringReader(tracksXml), set2));
-                        nav2 = doc2.CreateNavigator();
-
-                        var trackIdList = nav2.Select("dict/key[.='Track ID']/following-sibling::*");
-
-                        while (trackIdList.MoveNext())
+                        if (includeTracks)
                         {
-                            int trackId = trackIdList.Current.ValueAsInt;
-                            ItunesTrack track = m_ItunesTracks.FirstOrDefault(t => t.Id == trackId);
+                            var trackListXml = nav2.Select("key[.='Playlist Items']/following-sibling::*");
 
-                            if (track != null) playlist.Tracks.Add(track);
+                            trackListXml.MoveNext();
+                            string tracksXml = trackListXml.Current.InnerXml;
+
+                            doc2 = new XPathDocument(XmlReader.Create(new StringReader(tracksXml), playlistSet2));
+                            nav2 = doc2.CreateNavigator();
+
+                            var trackIdList = nav2.Select("dict/key[.='Track ID']/following-sibling::*");
+
+                            while (trackIdList.MoveNext())
+                            {
+                                int trackId = trackIdList.Current.ValueAsInt;
+                                ItunesTrack track = m_ItunesTracks.FirstOrDefault(t => t.Id == trackId);
+
+                                if (track != null) playlist.Tracks.Add(track);
+                            }
                         }
 
                         m_ItunesPlaylists.Add(playlist);

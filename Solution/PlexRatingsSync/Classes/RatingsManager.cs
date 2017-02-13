@@ -9,6 +9,26 @@ namespace DS.PlexRatingsSync
 {
     public class RatingsManager
     {
+        public static uint? FileRating(string file)
+        {
+            uint? fileRating = null;
+
+            try
+            {
+                ShellFile so = ShellFile.FromFilePath(file);
+
+                if (so.Properties.System.Rating.Value != null)
+                    fileRating = (uint)so.Properties.System.Rating.Value;
+            }
+            catch (Exception ex)
+            {
+                MessageManager.Instance.ExceptionWrite(new RatingsManager(), ex);
+                return null;
+            }
+
+            return fileRating;
+        }
+
         public static int? PlexRatingFromFile(string file)
         {
             try

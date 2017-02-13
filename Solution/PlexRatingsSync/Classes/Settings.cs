@@ -9,7 +9,7 @@ namespace DS.PlexRatingsSync
     public static class Settings
     {
         public static string PlexDatabase { get; set; }
-        public static int PlexAccount { get; set; }
+        public static string PlexAccount { get; set; }
         public static bool SyncRatings { get; set; }
         public static string ItunesLibraryPath { get; set; }
         public static bool SyncPlaylists { get; set; }
@@ -23,10 +23,8 @@ namespace DS.PlexRatingsSync
             PlexDatabase = 
                 Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "PlexDatabase", "").ToString();
 
-            int plexAccount;
-            bool success = int.TryParse(Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "PlexAccount", "").ToString(), out plexAccount);
-
-            if (success) PlexAccount = plexAccount;
+            PlexAccount = 
+                Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "PlexAccount", "").ToString();
 
             SyncRatings = bool.Parse(
                 Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "SyncRatings", "false").ToString());
@@ -48,7 +46,7 @@ namespace DS.PlexRatingsSync
         public static void SavePreferences()
         {
             SaveOption("PlexDatabase", PlexDatabase);
-            SaveOption("PlexAccount", PlexDatabase);
+            SaveOption("PlexAccount", PlexAccount);
 
             SaveOption("SyncRatings", SyncRatings);
             SaveOption("ItunesLibraryPath", ItunesLibraryPath);
@@ -65,6 +63,22 @@ namespace DS.PlexRatingsSync
         {
             if (optionValue != null)
                 Registry.SetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", optionName, optionValue);
+        }
+
+        public static int PlexAccountId
+        {
+            get
+            {
+                if (PlexAccount == null) return 0;
+                if (PlexAccount.Contains(" - "))
+                {
+                    int id;
+                    int.TryParse(PlexAccount.Substring(0, PlexAccount.IndexOf(" - ")), out id);
+                    return id;
+                }
+
+                return 0;
+            }
         }
     }
 }
