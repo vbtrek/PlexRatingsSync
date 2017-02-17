@@ -218,7 +218,6 @@ namespace DS.PlexRatingsSync
             // Get all the files to sync ratings for
             bwProcess.ReportProgress(0, "Reading Track Data From Plex...");
 
-// TODO_DS Add an option to choose the Plex account to sync
             string sql = @"
 SELECT MTI.guid, MP.file, MTIS.rating
 FROM media_items MI
