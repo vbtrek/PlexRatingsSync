@@ -8,7 +8,7 @@ using System.Text;
 
 namespace DS.PlexRatingsSync
 {
-    public class PlexDatabaseControlller : IDisposable
+    public class PlexDatabaseControlller : IPlexDatabaseControlller, IDisposable
     {
         private SQLiteConnection m_DbConnection = null;
 
@@ -77,7 +77,6 @@ namespace DS.PlexRatingsSync
 
             return data;
         }
-
 
         public void ExecutePlexSql(string sql)
         {
