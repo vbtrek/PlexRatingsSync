@@ -390,7 +390,7 @@ VALUES
                 {
                     // Remove the playlist
                     sql = @"
-DELETE metadata_item_accounts WHERE metadata_item_id = {0}";
+DELETE FROM metadata_item_accounts WHERE metadata_item_id = {0}";
                     sql = string.Format(sql, playlistId);
 #if DEBUG
                     Debug.Print(sql);
@@ -399,7 +399,7 @@ DELETE metadata_item_accounts WHERE metadata_item_id = {0}";
 #endif
 
                     sql = @"
-DELETE metadata_items WHERE id = {0}";
+DELETE FROM metadata_items WHERE id = {0}";
                     sql = string.Format(sql, playlistId);
 #if DEBUG
                     Debug.Print(sql);
