@@ -13,5 +13,6 @@ Options...
 ![Options](https://raw.githubusercontent.com/vbtrek/vbtrek.github.io/master/docs/plexratingssync2.png)
 
 **Fork changes**
+
 This fork lets you choose to sync independently ratings OR playlists.
 The rating sync feature is not limited to iTunes, it syncs the file rating tag of the file directly.
