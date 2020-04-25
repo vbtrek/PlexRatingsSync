@@ -57,6 +57,9 @@
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>DS.PlexRatingsSync.Program</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="DS.Controls.PropertyGridEx">
       <HintPath>Referenced Assemblies\DS.Controls.PropertyGridEx.dll</HintPath>
@@ -181,35 +184,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>ECHO ***** $(ProjectName) Post Build BEGIN *****
-
-ECHO Making Lib directory...
-IF EXIST "$(TargetDir)Lib\." RD /S /Q "$(TargetDir)Lib"
-MD "$(TargetDir)Lib"
-
-ECHO Removing XML files...
-DEL "$(TargetDir)*.xml"
-
-ECHO Moving DLL files...
-XCOPY "$(TargetDir)*.dll" "$(TargetDir)Lib" /Q /I /Y
-DEL "$(TargetDir)*.dll"
-
-ECHO Moving PDB files...
-XCOPY "$(TargetDir)Microsoft*.pdb" "$(TargetDir)Lib" /Q /I /Y
-DEL "$(TargetDir)Microsoft*.pdb"
-
-ECHO Moving x86 files...
-XCOPY "$(TargetDir)x86\*.*" "$(TargetDir)Lib\x86\" /Q /I /Y
-RD /S /Q "$(TargetDir)x86"
-
-ECHO Moving x64 files...
-XCOPY "$(TargetDir)x64\*.*" "$(TargetDir)Lib\x64\" /Q /I /Y
-RD /S /Q "$(TargetDir)x64"
-
-ECHO ***** $(ProjectName) Post Build END *****
-
-:BYE
-</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\System.Data.SQLite.Core.1.0.104.0\build\net40\System.Data.SQLite.Core.targets" Condition="Exists('..\packages\System.Data.SQLite.Core.1.0.104.0\build\net40\System.Data.SQLite.Core.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
