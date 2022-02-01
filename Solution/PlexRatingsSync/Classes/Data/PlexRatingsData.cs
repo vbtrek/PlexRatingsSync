@@ -5,10 +5,10 @@ using System.Text;
 
 namespace DS.PlexRatingsSync
 {
-    public class PlexRatingsData
-    {
-        public string guid { get; set; }
-        public string file { get; set; }
-        public double? rating { get; set; }
-    }
+  public class PlexRatingsData
+  {
+    public string guid { get; set; }
+    public string file { get; set; }
+    public double? rating { get; set; }
+  }
 }

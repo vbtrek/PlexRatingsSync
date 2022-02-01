@@ -7,86 +7,86 @@ using System.Text;
 
 namespace DS.PlexRatingsSync
 {
-    public class RatingsManager
+  public class RatingsManager
+  {
+    public static uint? FileRating(string file)
     {
-        public static uint? FileRating(string file)
-        {
-            uint? fileRating = null;
+      uint? fileRating = null;
 
-            try
-            {
-                ShellFile so = ShellFile.FromFilePath(file);
+      try
+      {
+        ShellFile so = ShellFile.FromFilePath(file);
 
-                if (so.Properties.System.Rating.Value != null)
-                    fileRating = (uint)so.Properties.System.Rating.Value;
-            }
-            catch (Exception ex)
-            {
-                MessageManager.Instance.ExceptionWrite(new RatingsManager(), ex);
-                return null;
-            }
+        if (so.Properties.System.Rating.Value != null)
+          fileRating = (uint)so.Properties.System.Rating.Value;
+      }
+      catch (Exception ex)
+      {
+        MessageManager.Instance.ExceptionWrite(new RatingsManager(), ex);
+        return null;
+      }
 
-            return fileRating;
-        }
-
-        public static int? PlexRatingFromFile(string file)
-        {
-            try
-            {
-                uint? fileRating = null;
-                ShellFile so = ShellFile.FromFilePath(file);
-
-                if (so.Properties.System.Rating.Value != null)
-                    fileRating = (uint)so.Properties.System.Rating.Value;
-
-                if (fileRating == null)
-                    return null;
-
-                if (fileRating < 1)
-                    return null;
-                else if (fileRating < 13)
-                    return 2;
-                else if (fileRating < 38)
-                    return 4;
-                else if (fileRating < 63)
-                    return 6;
-                else if (fileRating < 87)
-                    return 8;
-                else
-                    return 10;
-            }
-            catch (Exception ex)
-            {
-                MessageManager.Instance.ExceptionWrite(new RatingsManager(), ex);
-                return null;
-            }
-        }
-
-        public static int? FileRatingFromPlexRating(int? plexRating)
-        {
-            try
-            {
-                switch (plexRating)
-                {
-                    case 2:
-                        return 1;
-                    case 4:
-                        return 25;
-                    case 6:
-                        return 50;
-                    case 8:
-                        return 75;
-                    case 10:
-                        return 99;
-                    default:
-                        return null;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageManager.Instance.ExceptionWrite(new RatingsManager(), ex);
-                return null;
-            }
-        }
+      return fileRating;
     }
+
+    public static int? PlexRatingFromFile(string file)
+    {
+      try
+      {
+        uint? fileRating = null;
+        ShellFile so = ShellFile.FromFilePath(file);
+
+        if (so.Properties.System.Rating.Value != null)
+          fileRating = (uint)so.Properties.System.Rating.Value;
+
+        if (fileRating == null)
+          return null;
+
+        if (fileRating < 1)
+          return null;
+        else if (fileRating < 13)
+          return 2;
+        else if (fileRating < 38)
+          return 4;
+        else if (fileRating < 63)
+          return 6;
+        else if (fileRating < 87)
+          return 8;
+        else
+          return 10;
+      }
+      catch (Exception ex)
+      {
+        MessageManager.Instance.ExceptionWrite(new RatingsManager(), ex);
+        return null;
+      }
+    }
+
+    public static int? FileRatingFromPlexRating(int? plexRating)
+    {
+      try
+      {
+        switch (plexRating)
+        {
+          case 2:
+            return 1;
+          case 4:
+            return 25;
+          case 6:
+            return 50;
+          case 8:
+            return 75;
+          case 10:
+            return 99;
+          default:
+            return null;
+        }
+      }
+      catch (Exception ex)
+      {
+        MessageManager.Instance.ExceptionWrite(new RatingsManager(), ex);
+        return null;
+      }
+    }
+  }
 }
