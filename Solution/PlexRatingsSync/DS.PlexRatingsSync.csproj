@@ -79,6 +79,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Classes\TODO-SyncRatings Alternative.cs" />
+    <Compile Include="Classes\TaskDialogs.cs" />
     <Compile Include="Classes\Extensions.cs" />
     <Compile Include="Classes\Data\ItunesPlaylist.cs" />
     <Compile Include="Classes\Data\ItunesTrack.cs" />
@@ -159,7 +160,7 @@
       <Version>6.1.3</Version>
     </PackageReference>
     <PackageReference Include="log4net">
-      <Version>2.0.8</Version>
+      <Version>2.0.14</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.WindowsAPICodePack-Core">
       <Version>1.1.0.2</Version>

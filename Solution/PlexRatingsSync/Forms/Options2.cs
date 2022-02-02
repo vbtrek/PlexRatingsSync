@@ -19,6 +19,7 @@ namespace DS.PlexRatingsSync
     private void Options2_Load(object sender, EventArgs e)
     {
       m_Itunes.GetItunesPlayLists(Settings.ItunesLibraryPath, false);
+
       GetPreferences();
     }
 
@@ -59,7 +60,6 @@ namespace DS.PlexRatingsSync
     {
       Settings.PlexDatabase = txtPlexDatabase.Text;
       Settings.PlexAccount = cboPlexAccount.Text;
-
       Settings.SyncPlaylists = chkSyncPlaylists.Checked;
       Settings.ItunesLibraryPath = txtItunesLibrary.Text;
       Settings.RemoveEmptyPlaylists = chkRemoveEmptyPlaylists.Checked;
@@ -88,6 +88,7 @@ namespace DS.PlexRatingsSync
         string sql = @"SELECT id, 'Master' AS name FROM accounts WHERE id = 0
 UNION ALL
 SELECT id, name FROM accounts WHERE id > 0;";
+
         return plex.ReadPlexAndMap<PlexTableAccounts>(sql);
       }
 
@@ -152,6 +153,7 @@ SELECT id, name FROM accounts WHERE id > 0;";
   public class SelectedPlaylist
   {
     public string Playlist { get; set; }
+
     public bool Selected { get; set; }
   }
 }

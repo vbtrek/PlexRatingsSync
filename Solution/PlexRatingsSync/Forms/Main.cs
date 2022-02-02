@@ -61,7 +61,7 @@ namespace DS.PlexRatingsSync
       {
         cmdOptions.Enabled = false;
 
-        using (Options frm = new Options())
+        using (Options2 frm = new Options2())
         {
           frm.ShowDialog(this);
         }
@@ -235,7 +235,7 @@ namespace DS.PlexRatingsSync
         string sql = string.Empty;
 
         // Sync ratings
-        SyncRatings();
+        RatingsManager.SyncRatings(new SyncRatingsArgs(bwProcess, m_PlexDb));
 
         // Now sync playlists
         SyncPlaylists();
@@ -243,41 +243,6 @@ namespace DS.PlexRatingsSync
       catch (Exception ex)
       {
         MessageManager.Instance.ExceptionWrite(this, ex);
-      }
-    }
-
-    private void SyncRatings()
-    {
-      if (!Settings.SyncRatings) return;
-
-      // Get all the files to sync ratings for
-      bwProcess.ReportProgress(0, "Reading Track Data From Plex...");
-
-      string sql = @"
-SELECT MTI.guid, MP.file, MTIS.rating
-FROM media_items MI
-INNER JOIN media_parts MP ON MP.media_item_id = MI.id
-INNER JOIN metadata_items MTI ON MTI.id = MI.metadata_item_id
-INNER JOIN library_sections LS ON LS.id = MI.library_section_id
-LEFT JOIN metadata_item_settings MTIS ON MTIS.guid = MTI.guid AND MTIS.account_id = {0}
-WHERE LS.section_type = 8";
-      sql = string.Format(sql, Settings.PlexAccountId);
-
-      List<PlexRatingsData> ratingdata = m_PlexDb.ReadPlexAndMap<PlexRatingsData>(sql);
-
-      bwProcess.ReportProgress(ratingdata.Count);
-      bwProcess.ReportProgress(0, "Syncing Ratings...");
-
-      // Process all the files
-      foreach (PlexRatingsData file in ratingdata)
-      {
-        if (bwProcess.CancellationPending) return;
-
-        bwProcess.ReportProgress(0, $"Syncing \"{new FileInfo(file.file).Name}\"...");
-
-        SyncRating(file);
-
-        bwProcess.ReportProgress(-1);
       }
     }
 
@@ -477,125 +442,13 @@ WHERE id = {2}";
       return playlistId;
     }
 
-    private void SyncRating(PlexRatingsData currentFile)
-    {
-      try
-      {
-        if (currentFile != null && File.Exists(currentFile.file))
-        {
-          try
-          {
-            int? plexFileRating = RatingsManager.PlexRatingFromFile(currentFile.file);
-            int? plexDbRating = (int?)currentFile.rating;
-
-            if (plexFileRating != plexDbRating)
-            {
-              // NOTE: Plex wins if both the file and db have ratings that are different
-              if (plexDbRating != null)
-                UpdateFileRating(currentFile);
-              else
-                UpdatePlexDbRating(currentFile);
-            }
-          }
-          catch (Exception ex)
-          {
-            MessageManager.Instance.ExceptionWrite(this, ex);
-          }
-        }
-      }
-      catch (Exception ex)
-      {
-        MessageManager.Instance.ExceptionWrite(this, ex);
-      }
-    }
-
-    private void UpdatePlexDbRating(PlexRatingsData currentFile)
-    {
-      int? plexFileRating = RatingsManager.PlexRatingFromFile(currentFile.file);
-      int? plexDbRating = (int?)currentFile.rating;
-
-      string sql = string.Empty;
-      string message = string.Empty;
-
-      // the rating(s) of a given file
-      sql = string.Format(
-          @"SELECT * FROM metadata_item_settings WHERE account_id = {0} AND guid = '{1}';",
-          Settings.PlexAccountId, currentFile.guid);
-
-      if (m_PlexDb.RecordsExists(sql))
-      {
-        message = string.Format("Updating Plex rating for file \"{0}\" from {1} to {2}",
-            currentFile.file,
-            plexDbRating == null ? 0 : plexDbRating,
-            plexFileRating == null ? 0 : plexFileRating);
-
-        MessageManager.Instance.MessageWrite(this, MessageItem.MessageLevel.Information,
-            message);
-
-        bwProcess.ReportProgress(-2);
-
-        // Update a rating entry
-        sql = @"
-UPDATE metadata_item_settings SET rating = {0} WHERE account_id = {1} AND guid = '{2}'";
-
-        sql = string.Format(sql, plexFileRating, Settings.PlexAccountId, currentFile.guid);
-      }
-      else
-      {
-        message = string.Format("Creating Plex rating for file \"{0}\", rating {1}",
-            currentFile.file,
-            plexFileRating == null ? 0 : plexFileRating);
-
-        MessageManager.Instance.MessageWrite(this, MessageItem.MessageLevel.Information,
-            message);
-
-        bwProcess.ReportProgress(-3);
-
-        // Create a rating entry
-        sql = @"
-INSERT INTO metadata_item_settings ([account_id], [guid], [rating], [view_offset], [view_count], [last_viewed_at], [created_at], [updated_at])
-VALUES({0}, '{1}', {2}, NULL, 0, NULL, DATE('now'), DATE('now'));";
-
-        sql = string.Format(sql, Settings.PlexAccountId, currentFile.guid, plexFileRating);
-      }
-#if DEBUG
-      Debug.Print(message);
-#else
-            m_PlexDb.ExecutePlexSql(sql);
-#endif
-    }
-
-    private void UpdateFileRating(PlexRatingsData currentFile)
-    {
-      uint? fileRating = RatingsManager.FileRating(currentFile.file);
-      int? plexFileRating = RatingsManager.PlexRatingFromFile(currentFile.file);
-      int? plexDbRating = (int?)currentFile.rating;
-
-      uint? newRating = Convert.ToUInt32(RatingsManager.FileRatingFromPlexRating(plexDbRating));
-      if (newRating == 0) newRating = null;
-
-      string message = string.Format("Updating file rating for file \"{0}\", from {1} to {2}",
-          currentFile.file,
-          fileRating == null ? 0 : fileRating,
-          newRating == null ? 0 : newRating);
-
-      ShellFile so = ShellFile.FromFilePath(currentFile.file);
-#if DEBUG
-      Debug.Print(message);
-#else
-            so.Properties.System.Rating.Value = newRating;
-#endif
-
-      MessageManager.Instance.MessageWrite(this, MessageItem.MessageLevel.Information, message);
-    }
-
     private void cmdOptions_Click(object sender, EventArgs e)
     {
       cmdOptions.Enabled = false;
       bwProcess.CancelAsync();
       m_ResetEvent.WaitOne();
 
-      using (Options frm = new Options())
+      using (Options2 frm = new Options2())
       {
         frm.ShowDialog(this);
       }

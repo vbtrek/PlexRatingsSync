@@ -17,6 +17,7 @@ namespace DS.PlexRatingsSync
     static void Main()
     {
       Application.EnableVisualStyles();
+
       Application.SetCompatibleTextRenderingDefault(false);
 
       System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
@@ -26,6 +27,7 @@ namespace DS.PlexRatingsSync
 
       // Setup error handling
       string logPath = Path.Combine(Path.GetDirectoryName(assembly.Location), "Logs");
+
       if (!Directory.Exists(logPath)) Directory.CreateDirectory(logPath);
 
       foreach (FileInfo file in new DirectoryInfo(logPath).GetFiles())
@@ -34,6 +36,7 @@ namespace DS.PlexRatingsSync
       }
 
       MessageManager.Instance.LoggingFolder = logPath;
+
       MessageManager.Instance.InitialiseServiceLogging();
 
       // Always do debug logging in this tool
