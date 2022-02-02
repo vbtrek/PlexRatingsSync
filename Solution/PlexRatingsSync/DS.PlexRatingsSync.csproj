@@ -78,9 +78,19 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Classes\TODO-SyncRatings Alternative.cs" />
     <Compile Include="Classes\Extensions.cs" />
     <Compile Include="Classes\Data\ItunesPlaylist.cs" />
     <Compile Include="Classes\Data\ItunesTrack.cs" />
+    <Compile Include="Controls\EtchedLine.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\Options2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Options2.Designer.cs">
+      <DependentUpon>Options2.cs</DependentUpon>
+    </Compile>
     <Compile Include="Interfaces\IPlexDatabaseControlller.cs" />
     <Compile Include="Classes\ItunesManager.cs" />
     <Compile Include="Classes\PlexDatabaseControlller.cs" />
@@ -109,12 +119,18 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Classes\Settings.cs" />
+    <EmbeddedResource Include="Controls\EtchedLine.resx">
+      <DependentUpon>EtchedLine.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\Main.resx">
       <DependentUpon>Main.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\Options.resx">
       <DependentUpon>Options.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\Options2.resx">
+      <DependentUpon>Options2.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
