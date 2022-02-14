@@ -115,7 +115,7 @@ WHERE LS.section_type = 8";
           {
             switch (args.ClashHandling)
             {
-              case ClashWinner.File:
+              case ClashWinner.FileOrItunes:
                 result = RatingsClashResult.UseFileOrItunes;
                 break;
 

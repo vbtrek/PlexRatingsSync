@@ -45,6 +45,36 @@ namespace DS.PlexRatingsSync
       AddPlaylists();
 
       chkSyncRatings.Checked = Settings.SyncRatings;
+
+      foreach (EnumHelper.EnumValue item in cboSyncSource.Items)
+      {
+        if (item.EnumItem.Equals(Settings.SyncSource))
+        {
+          cboSyncSource.SelectedItem = item;
+
+          break;
+        }
+      }
+
+      foreach (EnumHelper.EnumValue item in cboSyncMode.Items)
+      {
+        if (item.EnumItem.Equals(Settings.SyncHandling))
+        {
+          cboSyncMode.SelectedItem = item;
+
+          break;
+        }
+      }
+
+      foreach (EnumHelper.EnumValue item in cboClashWinner.Items)
+      {
+        if (item.EnumItem.Equals(Settings.ClashHandling))
+        {
+          cboClashWinner.SelectedItem = item;
+
+          break;
+        }
+      }
     }
 
     private void AddPlaylists()
@@ -82,8 +112,27 @@ namespace DS.PlexRatingsSync
       }
 
       Settings.SyncRatings = chkSyncRatings.Checked;
-      
+
+      Settings.SyncSource = SelectedSource;
+
+      if (cboSyncMode.SelectedItem is EnumHelper.EnumValue mode)
+        Settings.SyncHandling = (SyncModes)mode.EnumItem;
+
+      if (cboSyncMode.SelectedItem is EnumHelper.EnumValue clash)
+        Settings.ClashHandling = (ClashWinner)clash.EnumItem;
+
       Settings.SavePreferences();
+    }
+
+    private SyncSources SelectedSource
+    {
+      get
+      {
+        if (cboSyncSource.SelectedItem is EnumHelper.EnumValue source)
+          return (SyncSources)source.EnumItem;
+
+        return SyncSources.FileProperties;
+      }
     }
 
     private List<PlexTableAccounts> GetPlexAccounts()
@@ -100,6 +149,21 @@ SELECT id, name FROM accounts WHERE id > 0;";
       }
 
       return new List<PlexTableAccounts>();
+    }
+
+    private void EnableDisableRatingsOptions(bool enable)
+    {
+      lblSyncSource.Enabled = enable;
+
+      cboSyncSource.Enabled = enable;
+
+      lblSyncMode.Enabled = enable;
+
+      cboSyncMode.Enabled = enable;
+
+      lblClashWinner.Enabled = enable;
+
+      cboClashWinner.Enabled = enable;
     }
 
     private void cmdPlexDatabase_Click(object sender, EventArgs e)
@@ -154,6 +218,64 @@ SELECT id, name FROM accounts WHERE id > 0;";
       SavePreferences();
 
       Close();
+    }
+
+    private void chkSyncRatings_CheckedChanged(object sender, EventArgs e)
+    {
+      EnableDisableRatingsOptions(chkSyncRatings.Checked);
+    }
+
+    private void cboSyncSource_SelectedIndexChanged(object sender, EventArgs e)
+    {
+      var modes = EnumHelper.GetAll<SyncModes>();
+
+      foreach (var item in modes)
+      {
+        switch (SelectedSource)
+        {
+          case SyncSources.FileProperties:
+            if (item.EnumItem.Equals(SyncModes.FileOrItunesToPlex))
+              item.Description = "File Properties to Plex";
+
+            if (item.EnumItem.Equals(SyncModes.PlexToFileOrItunes))
+              item.Description = "Plex to File Properties";
+
+            break;
+
+          case SyncSources.ITunesLibrary:
+            if (item.EnumItem.Equals(SyncModes.FileOrItunesToPlex))
+              item.Description = "iTunes Library to Plex";
+
+            if (item.EnumItem.Equals(SyncModes.PlexToFileOrItunes))
+              item.Description = "Plex to iTunes Library";
+
+            break;
+        }
+      }
+
+      cboSyncMode.DataSource = modes;
+
+      var clashWinner = EnumHelper.GetAll<ClashWinner>();
+
+      foreach (var item in clashWinner)
+      {
+        switch (SelectedSource)
+        {
+          case SyncSources.FileProperties:
+            if (item.EnumItem.Equals(ClashWinner.FileOrItunes))
+              item.Description = "File Properties Always Wins";
+
+            break;
+
+          case SyncSources.ITunesLibrary:
+            if (item.EnumItem.Equals(ClashWinner.FileOrItunes))
+              item.Description = "iTunes Library Always Wins";
+
+            break;
+        }
+      }
+
+      cboClashWinner.DataSource = clashWinner;
     }
   }
 

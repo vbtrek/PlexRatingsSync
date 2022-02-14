@@ -10,6 +10,24 @@ namespace DS.PlexRatingsSync
 {
   public static class EnumHelper
   {
+    public static EnumValue GetDetails(Enum enumValue)
+    {
+      string enumName = null;
+
+      string enumDescription = EnumDescription(enumValue as Enum);
+
+      if (enumName == null)
+        enumName = Enum.GetName(enumValue.GetType(), enumValue);
+
+      return new EnumValue
+      {
+        EnumItem = enumValue,
+        Key = Convert.ToInt32(enumValue),
+        Name = enumName,
+        Description = enumDescription
+      };
+    }
+
     public static List<EnumValue> GetAll(Type enumType)
     {
       if (!enumType.IsEnum)
@@ -19,21 +37,7 @@ namespace DS.PlexRatingsSync
 
       foreach (object value in Enum.GetValues(enumType))
       {
-        string enumName = null;
-
-        string enumDescription = EnumDescription(value as Enum);
-
-        if (enumName == null)
-          enumName = Enum.GetName(enumType, value);
-
-        EnumValue enumDetails = new EnumValue
-        {
-          Key = ((int)value),
-          Name = enumName,
-          Description = enumDescription
-        };
-
-        list.Add(enumDetails);
+        list.Add(GetDetails(value as Enum));
       }
 
       return list;
@@ -72,6 +76,8 @@ namespace DS.PlexRatingsSync
 
     public class EnumValue
     {
+      public Enum EnumItem { get; set; }
+
       public int Key { get; set; }
 
       public string Name { get; set; }

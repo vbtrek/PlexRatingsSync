@@ -45,13 +45,16 @@
       this.chkSyncRatings = new System.Windows.Forms.CheckBox();
       this.cmdCancel = new System.Windows.Forms.Button();
       this.cmdOk = new System.Windows.Forms.Button();
+      this.cboSyncSource = new System.Windows.Forms.ComboBox();
+      this.cboSyncMode = new System.Windows.Forms.ComboBox();
+      this.lblSyncSource = new System.Windows.Forms.Label();
+      this.lblSyncMode = new System.Windows.Forms.Label();
+      this.lblClashWinner = new System.Windows.Forms.Label();
+      this.cboClashWinner = new System.Windows.Forms.ComboBox();
+      this.etchedLine4 = new DS.Controls.EtchedLine();
       this.etchedLine3 = new DS.Controls.EtchedLine();
       this.etchedLine2 = new DS.Controls.EtchedLine();
       this.etchedLine1 = new DS.Controls.EtchedLine();
-      this.etchedLine4 = new DS.Controls.EtchedLine();
-      this.cboSyncSource = new System.Windows.Forms.ComboBox();
-      this.comboBox1 = new System.Windows.Forms.ComboBox();
-      this.label1 = new System.Windows.Forms.Label();
       ((System.ComponentModel.ISupportInitialize)(this.grdPlaylists)).BeginInit();
       this.SuspendLayout();
       // 
@@ -210,10 +213,11 @@
       this.chkSyncRatings.AutoSize = true;
       this.chkSyncRatings.Location = new System.Drawing.Point(15, 398);
       this.chkSyncRatings.Name = "chkSyncRatings";
-      this.chkSyncRatings.Size = new System.Drawing.Size(171, 17);
+      this.chkSyncRatings.Size = new System.Drawing.Size(124, 17);
       this.chkSyncRatings.TabIndex = 15;
-      this.chkSyncRatings.Text = "Sync Ratings from files to Plex";
+      this.chkSyncRatings.Text = "Sync Ratings to Plex";
       this.chkSyncRatings.UseVisualStyleBackColor = true;
+      this.chkSyncRatings.CheckedChanged += new System.EventHandler(this.chkSyncRatings_CheckedChanged);
       // 
       // cmdCancel
       // 
@@ -236,6 +240,87 @@
       this.cmdOk.Text = "OK";
       this.cmdOk.UseVisualStyleBackColor = true;
       this.cmdOk.Click += new System.EventHandler(this.CmdOk_Click);
+      // 
+      // cboSyncSource
+      // 
+      this.cboSyncSource.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.cboSyncSource.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+      this.cboSyncSource.Enabled = false;
+      this.cboSyncSource.FormattingEnabled = true;
+      this.cboSyncSource.Location = new System.Drawing.Point(323, 396);
+      this.cboSyncSource.Name = "cboSyncSource";
+      this.cboSyncSource.Size = new System.Drawing.Size(255, 21);
+      this.cboSyncSource.TabIndex = 19;
+      this.cboSyncSource.SelectedIndexChanged += new System.EventHandler(this.cboSyncSource_SelectedIndexChanged);
+      // 
+      // cboSyncMode
+      // 
+      this.cboSyncMode.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.cboSyncMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+      this.cboSyncMode.Enabled = false;
+      this.cboSyncMode.FormattingEnabled = true;
+      this.cboSyncMode.Location = new System.Drawing.Point(323, 423);
+      this.cboSyncMode.Name = "cboSyncMode";
+      this.cboSyncMode.Size = new System.Drawing.Size(255, 21);
+      this.cboSyncMode.TabIndex = 20;
+      // 
+      // lblSyncSource
+      // 
+      this.lblSyncSource.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+      this.lblSyncSource.AutoSize = true;
+      this.lblSyncSource.Enabled = false;
+      this.lblSyncSource.Location = new System.Drawing.Point(246, 399);
+      this.lblSyncSource.Name = "lblSyncSource";
+      this.lblSyncSource.Size = new System.Drawing.Size(69, 13);
+      this.lblSyncSource.TabIndex = 21;
+      this.lblSyncSource.Text = "Sync source:";
+      // 
+      // lblSyncMode
+      // 
+      this.lblSyncMode.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+      this.lblSyncMode.AutoSize = true;
+      this.lblSyncMode.Enabled = false;
+      this.lblSyncMode.Location = new System.Drawing.Point(246, 426);
+      this.lblSyncMode.Name = "lblSyncMode";
+      this.lblSyncMode.Size = new System.Drawing.Size(63, 13);
+      this.lblSyncMode.TabIndex = 22;
+      this.lblSyncMode.Text = "Sync mode:";
+      // 
+      // lblClashWinner
+      // 
+      this.lblClashWinner.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+      this.lblClashWinner.AutoSize = true;
+      this.lblClashWinner.Enabled = false;
+      this.lblClashWinner.Location = new System.Drawing.Point(246, 453);
+      this.lblClashWinner.Name = "lblClashWinner";
+      this.lblClashWinner.Size = new System.Drawing.Size(72, 13);
+      this.lblClashWinner.TabIndex = 24;
+      this.lblClashWinner.Text = "Clash winner:";
+      // 
+      // cboClashWinner
+      // 
+      this.cboClashWinner.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.cboClashWinner.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+      this.cboClashWinner.Enabled = false;
+      this.cboClashWinner.FormattingEnabled = true;
+      this.cboClashWinner.Location = new System.Drawing.Point(324, 450);
+      this.cboClashWinner.Name = "cboClashWinner";
+      this.cboClashWinner.Size = new System.Drawing.Size(255, 21);
+      this.cboClashWinner.TabIndex = 23;
+      // 
+      // etchedLine4
+      // 
+      this.etchedLine4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.etchedLine4.Edge = DS.Controls.EtchEdge.Center;
+      this.etchedLine4.Location = new System.Drawing.Point(-3, 479);
+      this.etchedLine4.Name = "etchedLine4";
+      this.etchedLine4.Size = new System.Drawing.Size(596, 21);
+      this.etchedLine4.TabIndex = 18;
+      this.etchedLine4.TextLabel = "";
       // 
       // etchedLine3
       // 
@@ -270,46 +355,6 @@
       this.etchedLine1.TabIndex = 7;
       this.etchedLine1.TextLabel = "Plex ";
       // 
-      // etchedLine4
-      // 
-      this.etchedLine4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-      this.etchedLine4.Edge = DS.Controls.EtchEdge.Center;
-      this.etchedLine4.Location = new System.Drawing.Point(-3, 479);
-      this.etchedLine4.Name = "etchedLine4";
-      this.etchedLine4.Size = new System.Drawing.Size(596, 21);
-      this.etchedLine4.TabIndex = 18;
-      this.etchedLine4.TextLabel = "";
-      // 
-      // cboSyncSource
-      // 
-      this.cboSyncSource.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-      this.cboSyncSource.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-      this.cboSyncSource.FormattingEnabled = true;
-      this.cboSyncSource.Location = new System.Drawing.Point(376, 396);
-      this.cboSyncSource.Name = "cboSyncSource";
-      this.cboSyncSource.Size = new System.Drawing.Size(202, 21);
-      this.cboSyncSource.TabIndex = 19;
-      // 
-      // comboBox1
-      // 
-      this.comboBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-      this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-      this.comboBox1.FormattingEnabled = true;
-      this.comboBox1.Location = new System.Drawing.Point(376, 423);
-      this.comboBox1.Name = "comboBox1";
-      this.comboBox1.Size = new System.Drawing.Size(202, 21);
-      this.comboBox1.TabIndex = 20;
-      // 
-      // label1
-      // 
-      this.label1.AutoSize = true;
-      this.label1.Location = new System.Drawing.Point(301, 399);
-      this.label1.Name = "label1";
-      this.label1.Size = new System.Drawing.Size(69, 13);
-      this.label1.TabIndex = 21;
-      this.label1.Text = "Sync source:";
-      // 
       // Options2
       // 
       this.AcceptButton = this.cmdOk;
@@ -317,8 +362,11 @@
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.CancelButton = this.cmdCancel;
       this.ClientSize = new System.Drawing.Size(590, 540);
-      this.Controls.Add(this.label1);
-      this.Controls.Add(this.comboBox1);
+      this.Controls.Add(this.lblClashWinner);
+      this.Controls.Add(this.cboClashWinner);
+      this.Controls.Add(this.lblSyncMode);
+      this.Controls.Add(this.lblSyncSource);
+      this.Controls.Add(this.cboSyncMode);
       this.Controls.Add(this.cboSyncSource);
       this.Controls.Add(this.etchedLine4);
       this.Controls.Add(this.cmdOk);
@@ -372,7 +420,10 @@
     private System.Windows.Forms.DataGridViewCheckBoxColumn colChecked;
     private Controls.EtchedLine etchedLine4;
     private System.Windows.Forms.ComboBox cboSyncSource;
-    private System.Windows.Forms.ComboBox comboBox1;
-    private System.Windows.Forms.Label label1;
+    private System.Windows.Forms.ComboBox cboSyncMode;
+    private System.Windows.Forms.Label lblSyncSource;
+    private System.Windows.Forms.Label lblSyncMode;
+    private System.Windows.Forms.Label lblClashWinner;
+    private System.Windows.Forms.ComboBox cboClashWinner;
   }
 }
