@@ -57,7 +57,7 @@ namespace DS.PlexRatingsSync
 
     private void fileButton_Click(object sender, EventArgs e)
     {
-      _RatingsClashReturn = RatingsClashResult.UseFile;
+      _RatingsClashReturn = RatingsClashResult.UseFileOrItunes;
 
       if (_TaskDialog != null) _TaskDialog.Close();
     }

@@ -235,7 +235,7 @@ namespace DS.PlexRatingsSync
         string sql = string.Empty;
 
         // Sync ratings
-        RatingsManager.SyncRatings(new SyncRatingsArgs(bwProcess, m_PlexDb));
+        RatingsManager.SyncRatings(new SyncRatingsArgs(bwProcess, m_PlexDb, Settings.SyncHandling, Settings.ClashHandling));
 
         // Now sync playlists
         SyncPlaylists();

@@ -10,11 +10,15 @@ namespace DS.PlexRatingsSync
   {
     public static string PlexDatabase { get; set; }
     public static string PlexAccount { get; set; }
-    public static bool SyncRatings { get; set; }
     public static string ItunesLibraryPath { get; set; }
     public static bool SyncPlaylists { get; set; }
     public static bool RemoveEmptyPlaylists { get; set; }
     public static List<string> ChosenPlaylists { get; set; }
+
+    public static bool SyncRatings { get; set; }
+    public static SyncSources SyncSource { get; set; }
+    public static SyncModes SyncHandling { get; set; }
+    public static ClashWinner ClashHandling { get; set; }
 
     public static void GetPreferences()
     {
@@ -25,9 +29,6 @@ namespace DS.PlexRatingsSync
 
       PlexAccount =
           Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "PlexAccount", "").ToString();
-
-      SyncRatings = bool.Parse(
-          Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "SyncRatings", "false").ToString());
 
       ItunesLibraryPath =
           Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "ItunesLibraryPath", "").ToString();
@@ -41,6 +42,22 @@ namespace DS.PlexRatingsSync
       ChosenPlaylists =
           Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "Playlists", String.Empty)
           .ToString().Split(',').ToList();
+
+
+      SyncRatings = bool.Parse(
+          Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "SyncRatings", "false").ToString());
+
+      var value = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "SyncSource", "0").ToString();
+
+      SyncSource = (SyncSources)Enum.Parse(typeof(SyncSources), value);
+
+      value = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "SyncHandling", "3").ToString();
+
+      SyncHandling = (SyncModes)Enum.Parse(typeof(SyncModes), value);
+
+      value = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "ClashHandling", "0").ToString();
+
+      ClashHandling = (ClashWinner)Enum.Parse(typeof(ClashWinner), value);
     }
 
     public static void SavePreferences()
@@ -48,7 +65,6 @@ namespace DS.PlexRatingsSync
       SaveOption("PlexDatabase", PlexDatabase);
       SaveOption("PlexAccount", PlexAccount);
 
-      SaveOption("SyncRatings", SyncRatings);
       SaveOption("ItunesLibraryPath", ItunesLibraryPath);
 
       SaveOption("SyncPlaylists", SyncPlaylists);
@@ -57,6 +73,11 @@ namespace DS.PlexRatingsSync
       string playlistString = String.Join(",", ChosenPlaylists.ToArray<string>());
 
       SaveOption("Playlists", playlistString);
+
+      SaveOption("SyncSource", SyncSource);
+      SaveOption("SyncRatings", SyncRatings);
+      SaveOption("SyncHandling", SyncHandling);
+      SaveOption("ClashHandling", ClashHandling);
     }
 
     private static void SaveOption(string optionName, object optionValue)

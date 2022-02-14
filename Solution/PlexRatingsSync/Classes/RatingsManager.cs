@@ -10,29 +10,6 @@ using System.Text;
 
 namespace DS.PlexRatingsSync
 {
-  public enum SyncModes
-  {
-    FileToPlex = 1,
-    PlexToFile = 2,
-    TwoWay = 3
-  }
-
-  public enum ClashWinner
-  {
-    Skip = 0,
-    Plex = 1,
-    File = 2,
-    Prompt = 3,
-    AlwaysPrompt = 4
-  }
-
-  public enum RatingsClashResult
-  {
-    Cancel = 0,
-    UsePlex = 1,
-    UseFile = 2
-  }
-
   public class RatingsManager
   {
     public static void SyncRatings(SyncRatingsArgs args)
@@ -81,7 +58,8 @@ WHERE LS.section_type = 8";
         {
           try
           {
-            if (args.FileRatingInPlexFormat != args.PlexDatabaseRating)
+            // TODO_DS1 Handle iTunes source
+            if (args.NormalisedRating(args.CurrentFileRating, RatingConvert.File) != args.NormalisedRating(args.CurrentPlexRating, RatingConvert.Plex))
             {
               switch (DetermineClashHandling(args))
               {
@@ -89,7 +67,7 @@ WHERE LS.section_type = 8";
                   UpdatePlexDbRating(args);
                   break;
 
-                case RatingsClashResult.UseFile:
+                case RatingsClashResult.UseFileOrItunes:
                   UpdateFileRating(args);
                   break;
               }
@@ -115,21 +93,21 @@ WHERE LS.section_type = 8";
 
       switch (args.SyncHandling)
       {
-        case SyncModes.FileToPlex:
-          result = RatingsClashResult.UseFile;
+        case SyncModes.FileOrItunesToPlex:
+          result = RatingsClashResult.UseFileOrItunes;
           break;
 
-        case SyncModes.PlexToFile:
+        case SyncModes.PlexToFileOrItunes:
           result = RatingsClashResult.UsePlex;
           break;
 
         case SyncModes.TwoWay:
           if (args.ClashHandling != ClashWinner.AlwaysPrompt)
           {
-            if (args.PlexDatabaseRating == 0 && args.FileRatingInPlexFormat > 0)
-              result = RatingsClashResult.UseFile;
+            if (args.CurrentPlexRating == 0 && args.ConvertRating(args.CurrentFileRating, RatingConvert.File, RatingConvert.Plex) > 0)
+              result = RatingsClashResult.UseFileOrItunes;
 
-            if (args.FileRatingInPlexFormat == 0 && args.PlexDatabaseRating > 0)
+            if (args.ConvertRating(args.CurrentFileRating, RatingConvert.File, RatingConvert.Plex) == 0 && args.CurrentPlexRating > 0)
               result = RatingsClashResult.UsePlex;
           }
 
@@ -138,7 +116,7 @@ WHERE LS.section_type = 8";
             switch (args.ClashHandling)
             {
               case ClashWinner.File:
-                result = RatingsClashResult.UseFile;
+                result = RatingsClashResult.UseFileOrItunes;
                 break;
 
               case ClashWinner.Plex:
@@ -148,11 +126,11 @@ WHERE LS.section_type = 8";
 
             if (result == RatingsClashResult.Cancel && args.ClashHandling != ClashWinner.Skip)
             {
-              FileInfo fi = new FileInfo(currentFile);
+              FileInfo fi = new FileInfo(args.CurrentFile.file);
 
               TaskDialogs dlg = new TaskDialogs();
               
-              result = dlg.RatingsClash(itunesFileTrack.Album + "\r\n" + fi.Name, iRating, fRating);
+              result = dlg.RatingsClash($"{args.PlexTitle}{Environment.NewLine}{fi.Name}", (int)args.CurrentPlexRating, (int)args.ConvertRating(args.CurrentFileRating, RatingConvert.File, RatingConvert.Plex));
             }
           }
 
@@ -170,9 +148,9 @@ WHERE LS.section_type = 8";
 
     private static void UpdatePlexDbRating(SyncRatingsArgs args)
     {
-      int? plexFileRating = args.FileRatingInPlexFormat;
+      int? plexFileRating = args.ConvertRating(args.CurrentFileRating, RatingConvert.File, RatingConvert.Plex);
 
-      int? plexDbRating = args.PlexDatabaseRating;
+      int? plexDbRating = args.CurrentPlexRating;
 
       string sql = string.Empty;
       string message = string.Empty;
@@ -227,20 +205,17 @@ VALUES({0}, '{1}', {2}, NULL, 0, NULL, DATE('now'), DATE('now'));";
 
     private static void UpdateFileRating(SyncRatingsArgs args)
     {
-      uint? fileRating = FileRating(args.CurrentFile.file);
+      int? currentFileRating = args.CurrentFileRating;
 
-      int? plexFileRating = args.FileRatingInPlexFormat;
+      uint? newFileRating = Convert.ToUInt32(args.ConvertRating(args.CurrentPlexRating, RatingConvert.Plex, RatingConvert.File));
+//      uint? newFileRating = Convert.ToUInt32(args.PlexRatingInFileFormat);
 
-      int? plexDbRating = (int?)args.CurrentFile.rating;
-
-      uint? newRating = Convert.ToUInt32(FileRatingFromPlexRating(plexDbRating));
-
-      if (newRating == 0) newRating = null;
+      if (newFileRating == 0) newFileRating = null;
 
       string message = string.Format("Updating file rating for file \"{0}\", from {1} to {2}",
           args.CurrentFile.file,
-          fileRating == null ? 0 : fileRating,
-          newRating == null ? 0 : newRating);
+          currentFileRating == null ? 0 : currentFileRating,
+          newFileRating == null ? 0 : newFileRating);
 
       ShellFile so = ShellFile.FromFilePath(args.CurrentFile.file);
 
@@ -251,122 +226,6 @@ VALUES({0}, '{1}', {2}, NULL, 0, NULL, DATE('now'), DATE('now'));";
 #endif
 
       MessageManager.Instance.MessageWrite(new object(), MessageItem.MessageLevel.Information, message);
-    }
-
-    private static uint? FileRating(string file)
-    {
-      uint? fileRating = null;
-
-      try
-      {
-        ShellFile so = ShellFile.FromFilePath(file);
-
-        if (so.Properties.System.Rating.Value != null)
-          fileRating = (uint)so.Properties.System.Rating.Value;
-      }
-      catch (Exception ex)
-      {
-        MessageManager.Instance.ExceptionWrite(new RatingsManager(), ex);
-
-        return null;
-      }
-
-      return fileRating;
-    }
-
-    private static int? FileRatingFromPlexRating(int? plexRating)
-    {
-      try
-      {
-        switch (plexRating)
-        {
-          case 2:
-            return 1;
-          case 4:
-            return 25;
-          case 6:
-            return 50;
-          case 8:
-            return 75;
-          case 10:
-            return 99;
-          default:
-            return null;
-        }
-      }
-      catch (Exception ex)
-      {
-        MessageManager.Instance.ExceptionWrite(new RatingsManager(), ex);
-        return null;
-      }
-    }
-  }
-
-  public class SyncRatingsArgs
-  {
-    public BackgroundWorker Worker { get; set; }
-
-    public PlexDatabaseControlller PlexDb { get; set; }
-
-    public PlexRatingsData CurrentFile { get; set; }
-
-    public SyncRatingsArgs(BackgroundWorker worker, PlexDatabaseControlller plexDb)
-    {
-      Worker = worker;
-
-      PlexDb = plexDb;
-    }
-
-    public void ReportProgress(string staus)
-    {
-      if (Worker == null) return;
-
-      Worker.ReportProgress(0, staus);
-    }
-
-    public void ReportProgress(int percentProgress)
-    {
-      if (Worker == null) return;
-
-      Worker.ReportProgress(percentProgress);
-    }
-
-    public int? FileRatingInPlexFormat => PlexRatingFromFile(CurrentFile?.file);
-
-    public int? PlexDatabaseRating => (int?)CurrentFile.rating;
-
-    private static int? PlexRatingFromFile(string file)
-    {
-      try
-      {
-        uint? fileRating = null;
-
-        ShellFile so = ShellFile.FromFilePath(file);
-
-        if (so.Properties?.System?.Rating?.Value != null)
-          fileRating = (uint)so.Properties.System.Rating.Value;
-
-        if (fileRating == null)
-          return null;
-
-        if (fileRating < 1)
-          return null;
-        else if (fileRating < 13)
-          return 2;
-        else if (fileRating < 38)
-          return 4;
-        else if (fileRating < 63)
-          return 6;
-        else if (fileRating < 87)
-          return 8;
-        else
-          return 10;
-      }
-      catch (Exception ex)
-      {
-        MessageManager.Instance.ExceptionWrite(new RatingsManager(), ex);
-        return null;
-      }
     }
   }
 }

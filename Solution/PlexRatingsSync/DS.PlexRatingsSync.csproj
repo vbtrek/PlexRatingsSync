@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DS.PlexRatingsSync</RootNamespace>
     <AssemblyName>DS.PlexRatingsSync</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -78,7 +78,8 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Classes\TODO-SyncRatings Alternative.cs" />
+    <Compile Include="Classes\Enums.cs" />
+    <Compile Include="Classes\SyncRatingsArgs.cs" />
     <Compile Include="Classes\TaskDialogs.cs" />
     <Compile Include="Classes\Extensions.cs" />
     <Compile Include="Classes\Data\ItunesPlaylist.cs" />
