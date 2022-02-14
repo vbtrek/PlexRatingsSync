@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ namespace DS.PlexRatingsSync
   // TODO_DS1 Update UI with new clash handling options
   public enum SyncSources
   {
+    [Description("File Properties")]
     FileProperties = 0,
     ITunesLibrary = 1
   }

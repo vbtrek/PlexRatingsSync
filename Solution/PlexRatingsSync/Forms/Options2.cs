@@ -20,7 +20,14 @@ namespace DS.PlexRatingsSync
     {
       m_Itunes.GetItunesPlayLists(Settings.ItunesLibraryPath, false);
 
+      PopulateDropdowns();
+
       GetPreferences();
+    }
+
+    private void PopulateDropdowns()
+    {
+      cboSyncSource.DataSource = EnumHelper.GetAll<SyncSources>();
     }
 
     private void GetPreferences()

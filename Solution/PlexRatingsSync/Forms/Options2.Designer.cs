@@ -35,6 +35,8 @@
       this.PlexAccount = new System.Windows.Forms.Label();
       this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
       this.grdPlaylists = new System.Windows.Forms.DataGridView();
+      this.colPlaylist = new System.Windows.Forms.DataGridViewTextBoxColumn();
+      this.colChecked = new System.Windows.Forms.DataGridViewCheckBoxColumn();
       this.chkSyncPlaylists = new System.Windows.Forms.CheckBox();
       this.lblItunesLibrary = new System.Windows.Forms.Label();
       this.cmdItunesLibrary = new System.Windows.Forms.Button();
@@ -43,12 +45,13 @@
       this.chkSyncRatings = new System.Windows.Forms.CheckBox();
       this.cmdCancel = new System.Windows.Forms.Button();
       this.cmdOk = new System.Windows.Forms.Button();
-      this.colPlaylist = new System.Windows.Forms.DataGridViewTextBoxColumn();
-      this.colChecked = new System.Windows.Forms.DataGridViewCheckBoxColumn();
       this.etchedLine3 = new DS.Controls.EtchedLine();
       this.etchedLine2 = new DS.Controls.EtchedLine();
       this.etchedLine1 = new DS.Controls.EtchedLine();
       this.etchedLine4 = new DS.Controls.EtchedLine();
+      this.cboSyncSource = new System.Windows.Forms.ComboBox();
+      this.comboBox1 = new System.Windows.Forms.ComboBox();
+      this.label1 = new System.Windows.Forms.Label();
       ((System.ComponentModel.ISupportInitialize)(this.grdPlaylists)).BeginInit();
       this.SuspendLayout();
       // 
@@ -125,8 +128,25 @@
       this.grdPlaylists.Location = new System.Drawing.Point(32, 175);
       this.grdPlaylists.Name = "grdPlaylists";
       this.grdPlaylists.RowHeadersVisible = false;
-      this.grdPlaylists.Size = new System.Drawing.Size(544, 179);
+      this.grdPlaylists.Size = new System.Drawing.Size(544, 167);
       this.grdPlaylists.TabIndex = 6;
+      // 
+      // colPlaylist
+      // 
+      this.colPlaylist.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+      this.colPlaylist.DataPropertyName = "Playlist";
+      this.colPlaylist.FillWeight = 80F;
+      this.colPlaylist.HeaderText = "Playlist";
+      this.colPlaylist.Name = "colPlaylist";
+      this.colPlaylist.ReadOnly = true;
+      // 
+      // colChecked
+      // 
+      this.colChecked.DataPropertyName = "Selected";
+      this.colChecked.FillWeight = 20F;
+      this.colChecked.FlatStyle = System.Windows.Forms.FlatStyle.System;
+      this.colChecked.HeaderText = "Selected";
+      this.colChecked.Name = "colChecked";
       // 
       // chkSyncPlaylists
       // 
@@ -177,7 +197,7 @@
       this.chkRemoveEmptyPlaylists.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
       this.chkRemoveEmptyPlaylists.AutoSize = true;
       this.chkRemoveEmptyPlaylists.Enabled = false;
-      this.chkRemoveEmptyPlaylists.Location = new System.Drawing.Point(32, 360);
+      this.chkRemoveEmptyPlaylists.Location = new System.Drawing.Point(32, 348);
       this.chkRemoveEmptyPlaylists.Name = "chkRemoveEmptyPlaylists";
       this.chkRemoveEmptyPlaylists.Size = new System.Drawing.Size(139, 17);
       this.chkRemoveEmptyPlaylists.TabIndex = 14;
@@ -188,7 +208,7 @@
       // 
       this.chkSyncRatings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
       this.chkSyncRatings.AutoSize = true;
-      this.chkSyncRatings.Location = new System.Drawing.Point(15, 410);
+      this.chkSyncRatings.Location = new System.Drawing.Point(15, 398);
       this.chkSyncRatings.Name = "chkSyncRatings";
       this.chkSyncRatings.Size = new System.Drawing.Size(171, 17);
       this.chkSyncRatings.TabIndex = 15;
@@ -199,7 +219,7 @@
       // 
       this.cmdCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
       this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-      this.cmdCancel.Location = new System.Drawing.Point(503, 459);
+      this.cmdCancel.Location = new System.Drawing.Point(503, 505);
       this.cmdCancel.Name = "cmdCancel";
       this.cmdCancel.Size = new System.Drawing.Size(75, 23);
       this.cmdCancel.TabIndex = 16;
@@ -209,7 +229,7 @@
       // cmdOk
       // 
       this.cmdOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-      this.cmdOk.Location = new System.Drawing.Point(422, 459);
+      this.cmdOk.Location = new System.Drawing.Point(422, 505);
       this.cmdOk.Name = "cmdOk";
       this.cmdOk.Size = new System.Drawing.Size(75, 23);
       this.cmdOk.TabIndex = 17;
@@ -217,29 +237,12 @@
       this.cmdOk.UseVisualStyleBackColor = true;
       this.cmdOk.Click += new System.EventHandler(this.CmdOk_Click);
       // 
-      // colPlaylist
-      // 
-      this.colPlaylist.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-      this.colPlaylist.DataPropertyName = "Playlist";
-      this.colPlaylist.FillWeight = 80F;
-      this.colPlaylist.HeaderText = "Playlist";
-      this.colPlaylist.Name = "colPlaylist";
-      this.colPlaylist.ReadOnly = true;
-      // 
-      // colChecked
-      // 
-      this.colChecked.DataPropertyName = "Selected";
-      this.colChecked.FillWeight = 20F;
-      this.colChecked.FlatStyle = System.Windows.Forms.FlatStyle.System;
-      this.colChecked.HeaderText = "Selected";
-      this.colChecked.Name = "colChecked";
-      // 
       // etchedLine3
       // 
       this.etchedLine3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
       this.etchedLine3.Edge = DS.Controls.EtchEdge.Center;
-      this.etchedLine3.Location = new System.Drawing.Point(12, 383);
+      this.etchedLine3.Location = new System.Drawing.Point(12, 371);
       this.etchedLine3.Name = "etchedLine3";
       this.etchedLine3.Size = new System.Drawing.Size(564, 21);
       this.etchedLine3.TabIndex = 9;
@@ -272,11 +275,40 @@
       this.etchedLine4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
       this.etchedLine4.Edge = DS.Controls.EtchEdge.Center;
-      this.etchedLine4.Location = new System.Drawing.Point(-3, 433);
+      this.etchedLine4.Location = new System.Drawing.Point(-3, 479);
       this.etchedLine4.Name = "etchedLine4";
       this.etchedLine4.Size = new System.Drawing.Size(596, 21);
       this.etchedLine4.TabIndex = 18;
       this.etchedLine4.TextLabel = "";
+      // 
+      // cboSyncSource
+      // 
+      this.cboSyncSource.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+      this.cboSyncSource.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+      this.cboSyncSource.FormattingEnabled = true;
+      this.cboSyncSource.Location = new System.Drawing.Point(376, 396);
+      this.cboSyncSource.Name = "cboSyncSource";
+      this.cboSyncSource.Size = new System.Drawing.Size(202, 21);
+      this.cboSyncSource.TabIndex = 19;
+      // 
+      // comboBox1
+      // 
+      this.comboBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+      this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+      this.comboBox1.FormattingEnabled = true;
+      this.comboBox1.Location = new System.Drawing.Point(376, 423);
+      this.comboBox1.Name = "comboBox1";
+      this.comboBox1.Size = new System.Drawing.Size(202, 21);
+      this.comboBox1.TabIndex = 20;
+      // 
+      // label1
+      // 
+      this.label1.AutoSize = true;
+      this.label1.Location = new System.Drawing.Point(301, 399);
+      this.label1.Name = "label1";
+      this.label1.Size = new System.Drawing.Size(69, 13);
+      this.label1.TabIndex = 21;
+      this.label1.Text = "Sync source:";
       // 
       // Options2
       // 
@@ -284,7 +316,10 @@
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.CancelButton = this.cmdCancel;
-      this.ClientSize = new System.Drawing.Size(590, 494);
+      this.ClientSize = new System.Drawing.Size(590, 540);
+      this.Controls.Add(this.label1);
+      this.Controls.Add(this.comboBox1);
+      this.Controls.Add(this.cboSyncSource);
       this.Controls.Add(this.etchedLine4);
       this.Controls.Add(this.cmdOk);
       this.Controls.Add(this.cmdCancel);
@@ -336,5 +371,8 @@
     private System.Windows.Forms.DataGridViewTextBoxColumn colPlaylist;
     private System.Windows.Forms.DataGridViewCheckBoxColumn colChecked;
     private Controls.EtchedLine etchedLine4;
+    private System.Windows.Forms.ComboBox cboSyncSource;
+    private System.Windows.Forms.ComboBox comboBox1;
+    private System.Windows.Forms.Label label1;
   }
 }
