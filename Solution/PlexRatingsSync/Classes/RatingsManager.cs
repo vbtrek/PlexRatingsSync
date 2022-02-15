@@ -58,8 +58,9 @@ WHERE LS.section_type = 8";
         {
           try
           {
-            // TODO_DS1 Handle iTunes source
-            if (args.NormalisedRating(args.CurrentFileRating, RatingConvert.File) != args.NormalisedRating(args.CurrentPlexRating, RatingConvert.Plex))
+            int? currentNormalisedSourceRating = CurrentNormalisedSourceRating(args);
+
+            if (currentNormalisedSourceRating != args.NormalisedRating(args.CurrentPlexRating, RatingConvert.Plex))
             {
               switch (DetermineClashHandling(args))
               {
@@ -68,7 +69,8 @@ WHERE LS.section_type = 8";
                   break;
 
                 case RatingsClashResult.UseFileOrItunes:
-                  UpdateFileRating(args);
+                  if (args.SyncSource == SyncSources.FileProperties) UpdateFileRating(args);
+                  if (args.SyncSource == SyncSources.ITunesLibrary) UpdateItunesRating(args);
                   break;
               }
             }
@@ -87,8 +89,6 @@ WHERE LS.section_type = 8";
 
     private static RatingsClashResult DetermineClashHandling(SyncRatingsArgs args)
     {
-      // if (args.PlexDatabaseRating != null)
-      
       var result = RatingsClashResult.Cancel;
 
       switch (args.SyncHandling)
@@ -102,12 +102,14 @@ WHERE LS.section_type = 8";
           break;
 
         case SyncModes.TwoWay:
+          int? currentNormalisedSourceRating = CurrentNormalisedSourceRating(args);
+
           if (args.ClashHandling != ClashWinner.AlwaysPrompt)
           {
-            if (args.CurrentPlexRating == 0 && args.ConvertRating(args.CurrentFileRating, RatingConvert.File, RatingConvert.Plex) > 0)
+            if (args.CurrentPlexRating == 0 && currentNormalisedSourceRating > 0)
               result = RatingsClashResult.UseFileOrItunes;
 
-            if (args.ConvertRating(args.CurrentFileRating, RatingConvert.File, RatingConvert.Plex) == 0 && args.CurrentPlexRating > 0)
+            if (currentNormalisedSourceRating == 0 && args.CurrentPlexRating > 0)
               result = RatingsClashResult.UsePlex;
           }
 
@@ -130,7 +132,7 @@ WHERE LS.section_type = 8";
 
               TaskDialogs dlg = new TaskDialogs();
               
-              result = dlg.RatingsClash($"{args.PlexTitle}{Environment.NewLine}{fi.Name}", (int)args.CurrentPlexRating, (int)args.ConvertRating(args.CurrentFileRating, RatingConvert.File, RatingConvert.Plex));
+              result = dlg.RatingsClash($"{args.PlexTitle}{Environment.NewLine}{fi.Name}", (int)args.CurrentPlexRating, (int)currentNormalisedSourceRating);
             }
           }
 
@@ -148,7 +150,7 @@ WHERE LS.section_type = 8";
 
     private static void UpdatePlexDbRating(SyncRatingsArgs args)
     {
-      int? plexFileRating = args.ConvertRating(args.CurrentFileRating, RatingConvert.File, RatingConvert.Plex);
+      int? currentNormalisedSourceRating = CurrentNormalisedSourceRating(args);
 
       int? plexDbRating = args.CurrentPlexRating;
 
@@ -165,7 +167,7 @@ WHERE LS.section_type = 8";
         message = string.Format("Updating Plex rating for file \"{0}\" from {1} to {2}",
             args.CurrentFile.file,
             plexDbRating == null ? 0 : plexDbRating,
-            plexFileRating == null ? 0 : plexFileRating);
+            currentNormalisedSourceRating == null ? 0 : currentNormalisedSourceRating);
 
         MessageManager.Instance.MessageWrite(new object(), MessageItem.MessageLevel.Information,
             message);
@@ -176,13 +178,13 @@ WHERE LS.section_type = 8";
         sql = @"
 UPDATE metadata_item_settings SET rating = {0} WHERE account_id = {1} AND guid = '{2}'";
 
-        sql = string.Format(sql, plexFileRating, Settings.PlexAccountId, args.CurrentFile.guid);
+        sql = string.Format(sql, currentNormalisedSourceRating, Settings.PlexAccountId, args.CurrentFile.guid);
       }
       else
       {
         message = string.Format("Creating Plex rating for file \"{0}\", rating {1}",
             args.CurrentFile.file,
-            plexFileRating == null ? 0 : plexFileRating);
+            currentNormalisedSourceRating == null ? 0 : currentNormalisedSourceRating);
 
         MessageManager.Instance.MessageWrite(new object(), MessageItem.MessageLevel.Information,
             message);
@@ -194,7 +196,7 @@ UPDATE metadata_item_settings SET rating = {0} WHERE account_id = {1} AND guid =
 INSERT INTO metadata_item_settings ([account_id], [guid], [rating], [view_offset], [view_count], [last_viewed_at], [created_at], [updated_at])
 VALUES({0}, '{1}', {2}, NULL, 0, NULL, DATE('now'), DATE('now'));";
 
-        sql = string.Format(sql, Settings.PlexAccountId, args.CurrentFile.guid, plexFileRating);
+        sql = string.Format(sql, Settings.PlexAccountId, args.CurrentFile.guid, currentNormalisedSourceRating);
       }
 #if DEBUG
       Debug.Print(message);
@@ -208,7 +210,6 @@ VALUES({0}, '{1}', {2}, NULL, 0, NULL, DATE('now'), DATE('now'));";
       int? currentFileRating = args.CurrentFileRating;
 
       uint? newFileRating = Convert.ToUInt32(args.ConvertRating(args.CurrentPlexRating, RatingConvert.Plex, RatingConvert.File));
-//      uint? newFileRating = Convert.ToUInt32(args.PlexRatingInFileFormat);
 
       if (newFileRating == 0) newFileRating = null;
 
@@ -226,6 +227,38 @@ VALUES({0}, '{1}', {2}, NULL, 0, NULL, DATE('now'), DATE('now'));";
 #endif
 
       MessageManager.Instance.MessageWrite(new object(), MessageItem.MessageLevel.Information, message);
+    }
+
+    private static void UpdateItunesRating(SyncRatingsArgs args)
+    {
+      int? currentItunesRating = args.CurrentItunesRating;
+
+      uint? newItunesRating = Convert.ToUInt32(args.ConvertRating(args.CurrentPlexRating, RatingConvert.Plex, RatingConvert.Itunes));
+
+      if (newItunesRating == 0) newItunesRating = null;
+
+      string message = string.Format("Updating iTunes rating for file \"{0}\", from {1} to {2}",
+          args.CurrentFile.file,
+          currentItunesRating == null ? 0 : currentItunesRating,
+          newItunesRating == null ? 0 : newItunesRating);
+
+      // TODO_DS1 Update iTunes
+
+      MessageManager.Instance.MessageWrite(new object(), MessageItem.MessageLevel.Information, message);
+    }
+
+    private static int? CurrentNormalisedSourceRating(SyncRatingsArgs args)
+    {
+      switch (args.SyncSource)
+      {
+        case SyncSources.FileProperties:
+          return args.ConvertRating(args.CurrentFileRating, RatingConvert.File, RatingConvert.Plex);
+
+        case SyncSources.ITunesLibrary:
+          return args.ConvertRating(args.CurrentItunesRating, RatingConvert.Itunes, RatingConvert.Plex);
+      }
+
+      return null;
     }
   }
 }

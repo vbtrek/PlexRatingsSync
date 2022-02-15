@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace DS.PlexRatingsSync
 {
-  // TODO_DS1 Update UI with new clash handling options
   public enum SyncSources
   {
     [Description("File Properties")]
@@ -17,7 +16,6 @@ namespace DS.PlexRatingsSync
     ITunesLibrary = 1
   }
 
-  // TODO_DS1 Update UI with new clash handling options
   public enum SyncModes
   {
     [Description("File or iTunes to Plex")]
@@ -30,7 +28,6 @@ namespace DS.PlexRatingsSync
     TwoWay = 3
   }
 
-  // TODO_DS1 Update UI with new clash handling options
   public enum ClashWinner
   {
     [Description("Skip")]

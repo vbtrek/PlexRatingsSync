@@ -15,6 +15,8 @@ namespace DS.PlexRatingsSync
 
     public PlexDatabaseControlller PlexDb { get; set; }
 
+    public SyncSources SyncSource { get; set; }
+
     public SyncModes SyncHandling { get; set; }
 
     public ClashWinner ClashHandling { get; set; }
@@ -34,11 +36,13 @@ namespace DS.PlexRatingsSync
     private int? _CachedFileRating = null;
 
     public SyncRatingsArgs(BackgroundWorker worker, PlexDatabaseControlller plexDb,
-      SyncModes syncHandling, ClashWinner clashHandling)
+      SyncSources syncSource, SyncModes syncHandling, ClashWinner clashHandling)
     {
       Worker = worker;
 
       PlexDb = plexDb;
+
+      SyncSource = syncSource;
 
       SyncHandling = syncHandling;
 
