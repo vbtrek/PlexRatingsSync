@@ -14,7 +14,6 @@ namespace DS.PlexRatingsSync
   {
     private AutoResetEvent m_ResetEvent = new AutoResetEvent(false);
     private PlexDatabaseControlller m_PlexDb;
-    private ItunesManager m_Itunes;
     private int m_UpdateCount = 0;
     private int m_AddCount = 0;
 
@@ -150,7 +149,6 @@ namespace DS.PlexRatingsSync
       label4.Text = string.Format("iTunes: {0}", Settings.ItunesLibraryPath.EllipsisString(60));
 
       m_PlexDb = new PlexDatabaseControlller(Settings.PlexDatabase);
-      m_Itunes = new ItunesManager();
 
       progressBar1.Value = 0;
       m_UpdateCount = 0;
@@ -235,211 +233,15 @@ namespace DS.PlexRatingsSync
         string sql = string.Empty;
 
         // Sync ratings
-        RatingsManager.SyncRatings(new SyncRatingsArgs(bwProcess, m_PlexDb, Settings.SyncSource, Settings.SyncHandling, Settings.ClashHandling));
+        RatingsManager.SyncRatings(new SyncArgs(bwProcess, m_PlexDb));
 
         // Now sync playlists
-        SyncPlaylists();
+        PlaylistManager.SyncPlaylists(new SyncArgs(bwProcess, m_PlexDb));
       }
       catch (Exception ex)
       {
         MessageManager.Instance.ExceptionWrite(this, ex);
       }
-    }
-
-    private void SyncPlaylists()
-    {
-      if (bwProcess.CancellationPending) return;
-
-      if (!Settings.SyncPlaylists) return;
-
-      bwProcess.ReportProgress(0, "Reading Playlists from iTunes...");
-      m_Itunes.GetItunesPlayLists(Settings.ItunesLibraryPath, true);
-
-      bwProcess.ReportProgress(Settings.ChosenPlaylists.Count);
-      bwProcess.ReportProgress(-4);
-      bwProcess.ReportProgress(0, "Syncing Playlists...");
-
-      foreach (var playlist in m_Itunes.ItunesPlaylists)
-      {
-        if (bwProcess.CancellationPending) return;
-
-        if (!Settings.ChosenPlaylists.Contains(playlist.FullPlaylistName)) continue;
-
-        bwProcess.ReportProgress(0, $"Syncing Playlist \"{playlist.FullPlaylistName}\"...");
-
-        // Find playlist by name
-        string sql = string.Empty;
-        bool isUpdate = false;
-        int? playlistId = GetPlexPlaylistId(playlist);
-
-        if (playlistId != null && playlistId > 0)
-        {
-          isUpdate = true;
-
-          // Delete playlist entries (ready to rebuild)
-          sql = "DELETE FROM play_queue_generators WHERE playlist_id = {0}";
-          sql = string.Format(sql, playlistId);
-#if DEBUG
-          Debug.Print(sql);
-#else
-                    m_PlexDb.ExecutePlexSql(sql);
-#endif
-
-          // Update the playlist back to blank
-          sql = @"
-UPDATE metadata_items
-SET media_item_count = 0, duration = 0, 
-updated_at = datetime('now'), extra_data = 'pv%3AdurationInSeconds=1&pv%3AsectionIDs=1'
-WHERE id = {0}";
-          sql = string.Format(sql, playlistId);
-#if DEBUG
-          Debug.Print(sql);
-#else
-                    m_PlexDb.ExecutePlexSql(sql);
-#endif
-        }
-        else
-        {
-          // Create playlist
-          sql = @"
-INSERT INTO metadata_items
-([guid], [metadata_type], [media_item_count], [title], [title_sort], [index], [absolute_index], [duration], [added_at], [created_at], [updated_at], [extra_data])
-VALUES
-('com.plexapp.agents.none://{0}', 15, 0, '{1}', '{1}', 
-0, 10, 0, datetime('now'), datetime('now'), datetime('now'), 'pv%3AdurationInSeconds=1&pv%3AsectionIDs=1')";
-          sql = string.Format(sql, Guid.NewGuid(), playlist.FullPlaylistName);
-#if DEBUG
-          Debug.Print(sql);
-#else
-                    m_PlexDb.ExecutePlexSql(sql);
-#endif
-
-          playlistId = GetPlexPlaylistId(playlist);
-        }
-
-        // Ensure there is a metadata_item_accounts record for each playlist
-        sql = "SELECT id FROM metadata_item_accounts WHERE account_id = {0} AND metadata_item_id = {1}";
-        sql = string.Format(sql, Settings.PlexAccountId, playlistId);
-        int? id = (int?)m_PlexDb.ReadPlexValue(sql);
-
-        if (id == null)
-        {
-          sql = @"
-INSERT INTO metadata_item_accounts (account_id, metadata_item_id)
-VALUES ({0}, {1})";
-          sql = string.Format(sql, Settings.PlexAccountId, playlistId);
-#if DEBUG
-          Debug.Print(sql);
-#else
-                    m_PlexDb.ExecutePlexSql(sql);
-#endif
-        }
-
-        // Insert the items into the playlist
-        int addDuration = 0;
-        int orderIncrement = 1000;
-
-        sql = "SELECT MAX([order]) FROM play_queue_generators WHERE playlist_id = {0}";
-        sql = string.Format(sql, playlistId);
-        double? currentOrder = m_PlexDb.ReadPlexValue(sql);
-        currentOrder = currentOrder == null ? orderIncrement : currentOrder;
-
-        foreach (var item in playlist.Tracks)
-        {
-          // Lookup the file in the DB to get it's id
-          sql = @"
-SELECT MI.metadata_item_id
-FROM media_parts AS MP
-INNER JOIN media_items AS MI ON MI.id = MP.media_item_id
-WHERE MP.file = '{0}' COLLATE NOCASE";
-          sql = string.Format(sql, item.ProperLocation.Replace("'", "''"));
-          long? dbItemID = m_PlexDb.ReadPlexValue(sql) as long?;
-
-          if (dbItemID != null)
-          {
-            // Lookup the duration in the DB
-            sql = @"
-SELECT MP.duration
-FROM media_parts AS MP
-INNER JOIN media_items AS MI ON MI.id = MP.media_item_id
-WHERE MI.metadata_item_id = {0}";
-            sql = string.Format(sql, dbItemID);
-            long? dbDuration = m_PlexDb.ReadPlexValue(sql) as long?;
-            if (dbDuration == null) dbDuration = 0;
-
-            // Create a new playlist entry
-            sql = @"
-INSERT INTO play_queue_generators
-([playlist_id], [metadata_item_id], [order], [created_at], [updated_at], [uri])
-VALUES
-({0}, {1}, {2}, datetime('now'), datetime('now'), '')";
-            sql = string.Format(sql, playlistId, dbItemID, currentOrder);
-#if DEBUG
-            Debug.Print(sql);
-#else
-                        m_PlexDb.ExecutePlexSql(sql);
-#endif
-
-            currentOrder += orderIncrement;
-
-            addDuration += (int)(dbDuration / 1000);
-          }
-        }
-
-        if (playlist.Tracks.Count == 0 && Settings.RemoveEmptyPlaylists)
-        {
-          // Remove the playlist
-          sql = @"
-DELETE FROM metadata_item_accounts WHERE metadata_item_id = {0}";
-          sql = string.Format(sql, playlistId);
-#if DEBUG
-          Debug.Print(sql);
-#else
-                    m_PlexDb.ExecutePlexSql(sql);
-#endif
-
-          sql = @"
-DELETE FROM metadata_items WHERE id = {0}";
-          sql = string.Format(sql, playlistId);
-#if DEBUG
-          Debug.Print(sql);
-#else
-                    m_PlexDb.ExecutePlexSql(sql);
-#endif
-        }
-        else
-        {
-          // Update the playlists info
-          sql = @"
-UPDATE metadata_items
-SET duration = {0},
-media_item_count = {1}
-WHERE id = {2}";
-          sql = string.Format(sql, addDuration, playlist.Tracks.Count, playlistId);
-#if DEBUG
-          Debug.Print(sql);
-#else
-                    m_PlexDb.ExecutePlexSql(sql);
-#endif
-        }
-
-        if (isUpdate)
-          bwProcess.ReportProgress(-2);
-        else
-          bwProcess.ReportProgress(-3);
-
-        bwProcess.ReportProgress(-1);
-      }
-    }
-
-    private int? GetPlexPlaylistId(ItunesPlaylist playlist)
-    {
-      int? playlistId = null;
-      string sql = "SELECT id FROM metadata_items WHERE title = '{0}' AND metadata_type = 15";    //15=PLAYLIST_TYPE
-      sql = string.Format(sql, playlist.FullPlaylistName);
-      playlistId = (int?)m_PlexDb.ReadPlexValue(sql);
-
-      return playlistId;
     }
 
     private void cmdOptions_Click(object sender, EventArgs e)

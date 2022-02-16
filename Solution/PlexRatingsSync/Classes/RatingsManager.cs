@@ -10,10 +10,12 @@ using System.Text;
 
 namespace DS.PlexRatingsSync
 {
-  public class RatingsManager
+  public static class RatingsManager
   {
-    public static void SyncRatings(SyncRatingsArgs args)
+    public static void SyncRatings(SyncArgs args)
     {
+      if (args.Worker.CancellationPending) return;
+
       if (!Settings.SyncRatings) return;
 
       // Get all the files to sync ratings for
@@ -33,6 +35,7 @@ WHERE LS.section_type = 8";
       List<PlexRatingsData> ratingdata = args.PlexDb.ReadPlexAndMap<PlexRatingsData>(sql);
 
       args.ReportProgress(ratingdata.Count);
+      
       args.ReportProgress("Syncing Ratings...");
 
       // Process all the files
@@ -46,11 +49,11 @@ WHERE LS.section_type = 8";
 
         SyncRating(args);
 
-        args.ReportProgress(-1);
+        args.ReportProgress(SyncArgs.ProgressType.IncrementProgressBar);
       }
     }
 
-    private static void SyncRating(SyncRatingsArgs args)
+    private static void SyncRating(SyncArgs args)
     {
       try
       {
@@ -69,8 +72,8 @@ WHERE LS.section_type = 8";
                   break;
 
                 case RatingsClashResult.UseFileOrItunes:
-                  if (args.SyncSource == SyncSources.FileProperties) UpdateFileRating(args);
-                  if (args.SyncSource == SyncSources.ITunesLibrary) UpdateItunesRating(args);
+                  if (Settings.SyncSource == SyncSources.FileProperties) UpdateFileRating(args);
+                  if (Settings.SyncSource == SyncSources.ITunesLibrary) UpdateItunesRating(args);
                   break;
               }
             }
@@ -87,11 +90,11 @@ WHERE LS.section_type = 8";
       }
     }
 
-    private static RatingsClashResult DetermineClashHandling(SyncRatingsArgs args)
+    private static RatingsClashResult DetermineClashHandling(SyncArgs args)
     {
       var result = RatingsClashResult.Cancel;
 
-      switch (args.SyncHandling)
+      switch (Settings.SyncHandling)
       {
         case SyncModes.FileOrItunesToPlex:
           result = RatingsClashResult.UseFileOrItunes;
@@ -104,7 +107,7 @@ WHERE LS.section_type = 8";
         case SyncModes.TwoWay:
           int? currentNormalisedSourceRating = CurrentNormalisedSourceRating(args);
 
-          if (args.ClashHandling != ClashWinner.AlwaysPrompt)
+          if (Settings.ClashHandling != ClashWinner.AlwaysPrompt)
           {
             if (args.CurrentPlexRating == 0 && currentNormalisedSourceRating > 0)
               result = RatingsClashResult.UseFileOrItunes;
@@ -115,7 +118,7 @@ WHERE LS.section_type = 8";
 
           if (result == RatingsClashResult.Cancel)
           {
-            switch (args.ClashHandling)
+            switch (Settings.ClashHandling)
             {
               case ClashWinner.FileOrItunes:
                 result = RatingsClashResult.UseFileOrItunes;
@@ -126,7 +129,7 @@ WHERE LS.section_type = 8";
                 break;
             }
 
-            if (result == RatingsClashResult.Cancel && args.ClashHandling != ClashWinner.Skip)
+            if (result == RatingsClashResult.Cancel && Settings.ClashHandling != ClashWinner.Skip)
             {
               FileInfo fi = new FileInfo(args.CurrentFile.file);
 
@@ -148,7 +151,7 @@ WHERE LS.section_type = 8";
       return result;
     }
 
-    private static void UpdatePlexDbRating(SyncRatingsArgs args)
+    private static void UpdatePlexDbRating(SyncArgs args)
     {
       int? currentNormalisedSourceRating = CurrentNormalisedSourceRating(args);
 
@@ -172,7 +175,7 @@ WHERE LS.section_type = 8";
         MessageManager.Instance.MessageWrite(new object(), MessageItem.MessageLevel.Information,
             message);
 
-        args.ReportProgress(-2);
+        args.ReportProgress(SyncArgs.ProgressType.IncrementUpdatedCount);
 
         // Update a rating entry
         sql = @"
@@ -189,7 +192,7 @@ UPDATE metadata_item_settings SET rating = {0} WHERE account_id = {1} AND guid =
         MessageManager.Instance.MessageWrite(new object(), MessageItem.MessageLevel.Information,
             message);
 
-        args.ReportProgress(-3);
+        args.ReportProgress(SyncArgs.ProgressType.IncrementNewCount);
 
         // Create a rating entry
         sql = @"
@@ -205,7 +208,7 @@ VALUES({0}, '{1}', {2}, NULL, 0, NULL, DATE('now'), DATE('now'));";
 #endif
     }
 
-    private static void UpdateFileRating(SyncRatingsArgs args)
+    private static void UpdateFileRating(SyncArgs args)
     {
       int? currentFileRating = args.CurrentFileRating;
 
@@ -229,7 +232,7 @@ VALUES({0}, '{1}', {2}, NULL, 0, NULL, DATE('now'), DATE('now'));";
       MessageManager.Instance.MessageWrite(new object(), MessageItem.MessageLevel.Information, message);
     }
 
-    private static void UpdateItunesRating(SyncRatingsArgs args)
+    private static void UpdateItunesRating(SyncArgs args)
     {
       int? currentItunesRating = args.CurrentItunesRating;
 
@@ -247,9 +250,9 @@ VALUES({0}, '{1}', {2}, NULL, 0, NULL, DATE('now'), DATE('now'));";
       MessageManager.Instance.MessageWrite(new object(), MessageItem.MessageLevel.Information, message);
     }
 
-    private static int? CurrentNormalisedSourceRating(SyncRatingsArgs args)
+    private static int? CurrentNormalisedSourceRating(SyncArgs args)
     {
-      switch (args.SyncSource)
+      switch (Settings.SyncSource)
       {
         case SyncSources.FileProperties:
           return args.ConvertRating(args.CurrentFileRating, RatingConvert.File, RatingConvert.Plex);

@@ -9,17 +9,19 @@ using System.Threading.Tasks;
 
 namespace DS.PlexRatingsSync
 {
-  public class SyncRatingsArgs
+  public class SyncArgs
   {
+    public enum ProgressType
+    {
+      IncrementProgressBar,
+      IncrementUpdatedCount,
+      IncrementNewCount,
+      ResetCounters
+    }
+
     public BackgroundWorker Worker { get; set; }
 
     public PlexDatabaseControlller PlexDb { get; set; }
-
-    public SyncSources SyncSource { get; set; }
-
-    public SyncModes SyncHandling { get; set; }
-
-    public ClashWinner ClashHandling { get; set; }
 
     public PlexRatingsData CurrentFile
     {
@@ -35,25 +37,39 @@ namespace DS.PlexRatingsSync
 
     private int? _CachedFileRating = null;
 
-    public SyncRatingsArgs(BackgroundWorker worker, PlexDatabaseControlller plexDb,
-      SyncSources syncSource, SyncModes syncHandling, ClashWinner clashHandling)
+    public SyncArgs(BackgroundWorker worker, PlexDatabaseControlller plexDb)
     {
       Worker = worker;
 
       PlexDb = plexDb;
-
-      SyncSource = syncSource;
-
-      SyncHandling = syncHandling;
-
-      ClashHandling = clashHandling;
     }
 
-    public void ReportProgress(string staus)
+    public void ReportProgress(ProgressType type)
     {
       if (Worker == null) return;
 
-      Worker.ReportProgress(0, staus);
+      switch (type)
+      {
+        case ProgressType.IncrementProgressBar:
+          Worker.ReportProgress(-1);
+          break;
+        case ProgressType.IncrementUpdatedCount:
+          Worker.ReportProgress(-2);
+          break;
+        case ProgressType.IncrementNewCount:
+          Worker.ReportProgress(-3);
+          break;
+        case ProgressType.ResetCounters:
+          Worker.ReportProgress(4);
+          break;
+      }
+    }
+
+    public void ReportProgress(string status)
+    {
+      if (Worker == null) return;
+
+      Worker.ReportProgress(0, status);
     }
 
     public void ReportProgress(int percentProgress)
@@ -120,7 +136,7 @@ namespace DS.PlexRatingsSync
         }
         catch (Exception ex)
         {
-          MessageManager.Instance.ExceptionWrite(new RatingsManager(), ex);
+          MessageManager.Instance.ExceptionWrite(new object(), ex);
 
           return null;
         }
