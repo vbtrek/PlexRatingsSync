@@ -13,8 +13,9 @@ namespace DS.PlexRatingsSync
   public partial class Main : Form
   {
     private AutoResetEvent _ResetEvent = new AutoResetEvent(false);
-    private PlexDatabaseControlller _PlexDb;
+
     private int _UpdateCount = 0;
+    
     private int _AddCount = 0;
 
     public Main()
@@ -31,7 +32,6 @@ namespace DS.PlexRatingsSync
       if (disposing)
       {
         if (components != null) components.Dispose();
-        if (_PlexDb != null) _PlexDb.Dispose();
       }
       base.Dispose(disposing);
     }
@@ -85,6 +85,97 @@ namespace DS.PlexRatingsSync
       _ResetEvent.WaitOne();
     }
 
+    private void bwProcess_DoWork(object sender, DoWorkEventArgs e)
+    {
+      if (!e.Cancel && bwProcess.CancellationPending)
+        e.Cancel = true;
+
+      if (!e.Cancel) Process();
+
+      if (!e.Cancel && bwProcess.CancellationPending)
+        e.Cancel = true;
+
+      _ResetEvent.Set();
+    }
+
+    private void bwProcess_ProgressChanged(object sender, ProgressChangedEventArgs e)
+    {
+      // Progress messagees
+      if (e.ProgressPercentage == 0)
+      {
+        UpdateLabel(lblStatus, e.UserState as string);
+
+        return;
+      }
+
+      // Increment progress
+      if (e.ProgressPercentage == -1)
+      {
+        progressBar1.Increment(1);
+
+        progressBar1.Refresh();
+
+        return;
+      }
+
+      // Updated
+      if (e.ProgressPercentage == -2)
+      {
+        _UpdateCount++;
+
+        UpdateLabel(lblTotals, $"Updated: {_UpdateCount} | New: {_AddCount}");
+
+        return;
+      }
+
+      // New
+      if (e.ProgressPercentage == -3)
+      {
+        _AddCount++;
+
+        UpdateLabel(lblTotals, $"Updated: {_UpdateCount} | New: {_AddCount}");
+        
+        return;
+      }
+
+      // Reset counters
+      if (e.ProgressPercentage == -4)
+      {
+        _AddCount = 0;
+
+        _UpdateCount = 0;
+
+        progressBar1.Value = progressBar1.Minimum;
+
+        UpdateLabel(lblTotals, $"Updated: {_UpdateCount} | New: {_AddCount}");
+
+        return;
+      }
+
+      // Set progress max
+      progressBar1.Maximum = e.ProgressPercentage;
+    }
+
+    private void bwProcess_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+    {
+      if (!e.Cancelled) Close();
+    }
+
+    private void cmdOptions_Click(object sender, EventArgs e)
+    {
+      cmdOptions.Enabled = false;
+      bwProcess.CancelAsync();
+      _ResetEvent.WaitOne();
+
+      using (Options2 frm = new Options2())
+      {
+        frm.ShowDialog(this);
+      }
+
+      cmdOptions.Enabled = true;
+      StartProcessing();
+    }
+
     private bool IsSettingValid(bool showMessage)
     {
       if (string.IsNullOrWhiteSpace(Settings.PlexDatabase))
@@ -132,10 +223,9 @@ namespace DS.PlexRatingsSync
 
     private void StartProcessing()
     {
-      lblStatus.Text = "Connecting to database...";
-      lblStatus.Refresh();
-      lblTotals.Text = $"Updated: 0 | New: 0";
-      lblTotals.Refresh();
+      UpdateLabel(lblStatus, "Connecting to database...");
+
+      UpdateLabel(lblTotals, $"Updated: 0 | New: 0");
 
       if (string.IsNullOrWhiteSpace(Settings.PlexDatabase))
       {
@@ -145,85 +235,17 @@ namespace DS.PlexRatingsSync
           Settings.PlexDatabase = dbPath;
       }
 
-      lblPlex.Text = $"Plex:   {Settings.PlexDatabase.EllipsisString(60)}";
-      lblItunes.Text = $"iTunes: {Settings.ItunesLibraryPath.EllipsisString(60)}";
+      UpdateLabel(lblPlex, $"Plex:   {Settings.PlexDatabase.EllipsisString(60)}");
 
-      _PlexDb = new PlexDatabaseControlller(Settings.PlexDatabase);
+      UpdateLabel(lblItunes, $"iTunes: {Settings.ItunesLibraryPath.EllipsisString(60)}");
 
       progressBar1.Value = 0;
+
       _UpdateCount = 0;
+      
       _AddCount = 0;
 
       bwProcess.RunWorkerAsync();
-    }
-
-    private void bwProcess_DoWork(object sender, DoWorkEventArgs e)
-    {
-      if (!e.Cancel && bwProcess.CancellationPending)
-        e.Cancel = true;
-
-      if (!e.Cancel && _PlexDb.IsDbConnected) Process();
-
-      if (!e.Cancel && bwProcess.CancellationPending)
-        e.Cancel = true;
-
-      _ResetEvent.Set();
-    }
-
-    private void bwProcess_ProgressChanged(object sender, ProgressChangedEventArgs e)
-    {
-      // Progress messagees
-      if (e.ProgressPercentage == 0)
-      {
-        lblStatus.Text = e.UserState as string;
-        lblStatus.Refresh();
-        return;
-      }
-
-      // Increment progress
-      if (e.ProgressPercentage == -1)
-      {
-        progressBar1.Increment(1);
-        progressBar1.Refresh();
-        return;
-      }
-
-      // Updated
-      if (e.ProgressPercentage == -2)
-      {
-        _UpdateCount++;
-        lblTotals.Text = $"Updated: {_UpdateCount} | New: {_AddCount}";
-        lblTotals.Refresh();
-        return;
-      }
-
-      // New
-      if (e.ProgressPercentage == -3)
-      {
-        _AddCount++;
-        lblTotals.Text = $"Updated: {_UpdateCount} | New: {_AddCount}";
-        lblTotals.Refresh();
-        return;
-      }
-
-      // Reset counters
-      if (e.ProgressPercentage == -4)
-      {
-        _AddCount = 0;
-        _UpdateCount = 0;
-        progressBar1.Value = progressBar1.Minimum;
-        lblTotals.Text = $"Updated: {_UpdateCount} | New: {_AddCount}";
-        lblTotals.Refresh();
-        return;
-      }
-
-      // Set progress max
-      progressBar1.Maximum = e.ProgressPercentage;
-    }
-
-    private void bwProcess_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-    {
-      if (!e.Cancelled) Close();
     }
 
     private void Process()
@@ -232,11 +254,16 @@ namespace DS.PlexRatingsSync
       {
         string sql = string.Empty;
 
-        // Sync ratings
-        RatingsManager.SyncRatings(new SyncArgs(bwProcess, _PlexDb));
+        using (var args = new SyncArgs(bwProcess))
+        {
+          if (!args.PlexDb.IsDbConnected) return;
 
-        // Now sync playlists
-        PlaylistManager.SyncPlaylists(new SyncArgs(bwProcess, _PlexDb));
+          // Sync ratings
+          RatingsManager.SyncRatings(args);
+
+          // Now sync playlists
+          PlaylistManager.SyncPlaylists(args);
+        }
       }
       catch (Exception ex)
       {
@@ -244,19 +271,11 @@ namespace DS.PlexRatingsSync
       }
     }
 
-    private void cmdOptions_Click(object sender, EventArgs e)
+    private void UpdateLabel(Label control, string text)
     {
-      cmdOptions.Enabled = false;
-      bwProcess.CancelAsync();
-      _ResetEvent.WaitOne();
+      control.Text = text;
 
-      using (Options2 frm = new Options2())
-      {
-        frm.ShowDialog(this);
-      }
-
-      cmdOptions.Enabled = true;
-      StartProcessing();
+      control.Refresh();
     }
   }
 }

@@ -3,14 +3,17 @@ using Microsoft.WindowsAPICodePack.Shell;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace DS.PlexRatingsSync
 {
-  public class SyncArgs
+  public class SyncArgs : IDisposable
   {
+    #region Enums
+
     public enum ProgressType
     {
       IncrementProgressBar,
@@ -19,9 +22,25 @@ namespace DS.PlexRatingsSync
       ResetCounters
     }
 
+    #endregion
+
+    #region Private members
+
+    private PlexRatingsData _CurrentFile = null;
+
+    private int? _CachedFileRating = null;
+
+    private bool _DisposedValue;
+
+    #endregion
+
+    #region Public properties
+
     public BackgroundWorker Worker { get; set; }
 
     public PlexDatabaseControlller PlexDb { get; set; }
+
+    public ItunesManager ItunesData { get; set; }
 
     public PlexRatingsData CurrentFile
     {
@@ -35,16 +54,29 @@ namespace DS.PlexRatingsSync
 
     public int? CurrentItunesRating => ReadItunesRating();
 
-    private PlexRatingsData _CurrentFile = null;
+    #endregion
 
-    private int? _CachedFileRating = null;
+    #region Constructor
 
-    public SyncArgs(BackgroundWorker worker, PlexDatabaseControlller plexDb)
+    public SyncArgs(BackgroundWorker worker)
     {
       Worker = worker;
 
-      PlexDb = plexDb;
+      PlexDb = new PlexDatabaseControlller(Settings.PlexDatabase);
+
+      ItunesData = new ItunesManager(Settings.ItunesLibraryPath);
+
+      if (Settings.SyncPlaylists || (Settings.SyncRatings && Settings.SyncSource == SyncSources.ITunesLibrary))
+      {
+        ReportProgress("Reading Playlists from iTunes...");
+
+        ItunesData.ReadItunesData(true, true);
+      }
     }
+
+    #endregion
+
+    #region Public methods
 
     public void ReportProgress(ProgressType type)
     {
@@ -123,6 +155,22 @@ namespace DS.PlexRatingsSync
       return null;
     }
 
+    public string PlexTitle
+    {
+      get
+      {
+        string sql = "SELECT title FROM metadata_items WHERE guid = '{0}' AND metadata_type = 10";
+
+        sql = string.Format(sql, CurrentFile.guid);
+
+        return (string)PlexDb.ReadPlexValue(sql);
+      }
+    }
+
+    #endregion
+
+    #region Private methods
+
     private int? ReadFileRating(string file)
     {
       int? fileRating = null;
@@ -154,6 +202,8 @@ namespace DS.PlexRatingsSync
     private int? ReadItunesRating()
     {
       // TODO_DS1 Need to get current iTunes Rating somehow
+      Debug.Assert(false);
+
       return 0;
     }
 
@@ -277,16 +327,35 @@ namespace DS.PlexRatingsSync
       }
     }
 
-    public string PlexTitle
+    #endregion
+
+    #region Dispose pattern
+
+    protected virtual void Dispose(bool disposing)
     {
-      get
+      if (!_DisposedValue)
       {
-        string sql = "SELECT title FROM metadata_items WHERE guid = '{0}' AND metadata_type = 10";
+        if (disposing)
+        {
+          // Dispose managed state (managed objects)
+          if (PlexDb != null) PlexDb.Dispose();
+        }
 
-        sql = string.Format(sql, CurrentFile.guid);
+        // Free any unmanaged resources (unmanaged objects) and override finalizer
+        // Set large fields to null
 
-        return (string)PlexDb.ReadPlexValue(sql);
+        _DisposedValue = true;
       }
     }
+
+    public void Dispose()
+    {
+      // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+      Dispose(disposing: true);
+
+      GC.SuppressFinalize(this);
+    }
+
+    #endregion
   }
 }
