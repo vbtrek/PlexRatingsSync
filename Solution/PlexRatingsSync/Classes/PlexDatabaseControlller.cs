@@ -10,26 +10,26 @@ namespace DS.PlexRatingsSync
 {
   public class PlexDatabaseControlller : IPlexDatabaseControlller, IDisposable
   {
-    private SQLiteConnection m_DbConnection = null;
+    private SQLiteConnection _DbConnection = null;
 
     public PlexDatabaseControlller(string database)
     {
       if (!string.IsNullOrWhiteSpace(database))
       {
-        m_DbConnection = new SQLiteConnection(string.Format("Data Source={0};Version=3;", database));
+        _DbConnection = new SQLiteConnection(string.Format("Data Source={0};Version=3;", database));
 
         try
         {
-          m_DbConnection.Open();
+          _DbConnection.Open();
         }
         catch (Exception)
         {
-          m_DbConnection = null;
+          _DbConnection = null;
         }
       }
       else
       {
-        m_DbConnection = null;
+        _DbConnection = null;
       }
     }
 
@@ -38,7 +38,7 @@ namespace DS.PlexRatingsSync
       if (disposing)
       {
         // Dispose of objects in MyClass only
-        if (m_DbConnection != null) m_DbConnection.Close();
+        if (_DbConnection != null) _DbConnection.Close();
       }
     }
 
@@ -48,10 +48,7 @@ namespace DS.PlexRatingsSync
       GC.SuppressFinalize(this);
     }
 
-    public bool IsDbConnected
-    {
-      get { return m_DbConnection != null; }
-    }
+    public bool IsDbConnected => _DbConnection != null;
 
     public List<T> ReadPlexAndMap<T>(string sql)
         where T : new()
@@ -62,7 +59,7 @@ namespace DS.PlexRatingsSync
 
       List<T> data = new List<T>();
 
-      using (SQLiteCommand command = new SQLiteCommand(sql, m_DbConnection))
+      using (SQLiteCommand command = new SQLiteCommand(sql, _DbConnection))
       {
         using (SQLiteDataReader reader = command.ExecuteReader())
         {
@@ -84,7 +81,7 @@ namespace DS.PlexRatingsSync
           string.Format("Executing SQL{0}{1}",
           Environment.NewLine, sql));
 
-      using (SQLiteCommand command = new SQLiteCommand(sql, m_DbConnection))
+      using (SQLiteCommand command = new SQLiteCommand(sql, _DbConnection))
       {
         command.ExecuteNonQuery();
       }
@@ -98,7 +95,7 @@ namespace DS.PlexRatingsSync
 
       dynamic result = null;
 
-      using (SQLiteCommand command = new SQLiteCommand(sql, m_DbConnection))
+      using (SQLiteCommand command = new SQLiteCommand(sql, _DbConnection))
       {
         using (SQLiteDataReader reader = command.ExecuteReader())
         {
@@ -124,7 +121,7 @@ namespace DS.PlexRatingsSync
           string.Format("Executing SQL{0}{1}",
           Environment.NewLine, sql));
 
-      using (SQLiteCommand command = new SQLiteCommand(sql, m_DbConnection))
+      using (SQLiteCommand command = new SQLiteCommand(sql, _DbConnection))
       {
         using (SQLiteDataReader reader = command.ExecuteReader())
         {

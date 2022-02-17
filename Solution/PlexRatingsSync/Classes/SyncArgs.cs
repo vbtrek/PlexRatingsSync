@@ -33,6 +33,8 @@ namespace DS.PlexRatingsSync
 
     public int? CurrentFileRating => ReadFileRating(CurrentFile?.file);
 
+    public int? CurrentItunesRating => ReadItunesRating();
+
     private PlexRatingsData _CurrentFile = null;
 
     private int? _CachedFileRating = null;
@@ -147,6 +149,12 @@ namespace DS.PlexRatingsSync
         fileRating = _CachedFileRating;
 
       return fileRating;
+    }
+
+    private int? ReadItunesRating()
+    {
+      // TODO_DS1 Need to get current iTunes Rating somehow
+      return 0;
     }
 
     private static int? NormaliseFileRating(int? fileRating)

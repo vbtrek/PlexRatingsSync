@@ -13,7 +13,7 @@ namespace DS.PlexRatingsSync
 {
   public partial class Options : Form
   {
-    private ItunesManager m_Itunes = new ItunesManager();
+    private ItunesManager _ItunesManager = new ItunesManager(Settings.ItunesLibraryPath);
 
     public Options()
     {
@@ -22,7 +22,7 @@ namespace DS.PlexRatingsSync
 
     private void Options_Load(object sender, EventArgs e)
     {
-      m_Itunes.GetItunesPlayLists(Settings.ItunesLibraryPath, false);
+      _ItunesManager.ReadItunesData(true, false);
       
       GetPreferences();
     }
@@ -85,7 +85,7 @@ namespace DS.PlexRatingsSync
           grdConfig.Item.Remove(item.Name);
       }
 
-      foreach (var playlist in m_Itunes.ItunesPlaylists)
+      foreach (var playlist in _ItunesManager.ItunesPlaylists)
       {
         bool export = false;
 
@@ -110,7 +110,7 @@ namespace DS.PlexRatingsSync
 
       Settings.ChosenPlaylists.Clear();
 
-      foreach (var playlist in m_Itunes.ItunesPlaylists)
+      foreach (var playlist in _ItunesManager.ItunesPlaylists)
       {
         bool playlistSetting = bool.TryParse(GetPropertyValue(playlist.FullPlaylistName), out result) ? result : false;
 
@@ -130,8 +130,10 @@ namespace DS.PlexRatingsSync
         switch (changedItem.Label)
         {
           case "iTunes Library":
+            _ItunesManager = new ItunesManager(changedItem.Value.ToString());
+
             // Read playlists
-            m_Itunes.GetItunesPlayLists(changedItem.Value.ToString(), false);
+            _ItunesManager.ReadItunesData(true, false);
 
             AddPlaylists();
 
@@ -147,7 +149,7 @@ namespace DS.PlexRatingsSync
 
       GridItem exportItem = GetOption("Sync Playlists");
 
-      List<string> exportRelatedItems = m_Itunes.ItunesPlaylists.ConvertAll(i => i.FullPlaylistName);
+      List<string> exportRelatedItems = _ItunesManager.ItunesPlaylists.ConvertAll(i => i.FullPlaylistName);
       exportRelatedItems.Add("Remove Empty Playlists");
       exportRelatedItems.Add("iTunes Library");
 

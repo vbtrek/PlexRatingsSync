@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -9,7 +10,7 @@ namespace DS.PlexRatingsSync
 {
   public partial class Options2 : Form
   {
-    private ItunesManager m_Itunes = new ItunesManager();
+    private ItunesManager _ItunesManager = new ItunesManager(Settings.ItunesLibraryPath);
 
     public Options2()
     {
@@ -18,7 +19,7 @@ namespace DS.PlexRatingsSync
 
     private void Options2_Load(object sender, EventArgs e)
     {
-      m_Itunes.GetItunesPlayLists(Settings.ItunesLibraryPath, false);
+      _ItunesManager.ReadItunesData(true, false);
 
       PopulateDropdowns();
 
@@ -79,7 +80,7 @@ namespace DS.PlexRatingsSync
 
     private void AddPlaylists()
     {
-      var selectedPlaylists = (from playlist in m_Itunes.ItunesPlaylists
+      var selectedPlaylists = (from playlist in _ItunesManager.ItunesPlaylists
                               select new SelectedPlaylist() { Playlist = playlist.FullPlaylistName, Selected = false })
                               .ToList();
 
@@ -170,7 +171,15 @@ SELECT id, name FROM accounts WHERE id > 0;";
     {
       openFileDialog.Filter = "Plex Database Files|com.plexapp.plugins.library.db";
 
-      openFileDialog.FileName = txtPlexDatabase.Text;
+      if (string.IsNullOrWhiteSpace(txtPlexDatabase.Text))
+      {
+        var path = Environment.ExpandEnvironmentVariables(@"%LOCALAPPDATA%\Plex Media Server\Plug-in Support\Databases");
+
+        if (Directory.Exists(path))
+          openFileDialog.FileName = path;
+      }
+      else
+        openFileDialog.FileName = txtPlexDatabase.Text;
 
       if (openFileDialog.ShowDialog() == DialogResult.OK)
       {
@@ -208,7 +217,9 @@ SELECT id, name FROM accounts WHERE id > 0;";
 
     private void txtItunesLibrary_TextChanged(object sender, EventArgs e)
     {
-      m_Itunes.GetItunesPlayLists(txtItunesLibrary.Text, false);
+      _ItunesManager = new ItunesManager(txtItunesLibrary.Text);
+
+      _ItunesManager.ReadItunesData(true, false);
 
       AddPlaylists();
     }
