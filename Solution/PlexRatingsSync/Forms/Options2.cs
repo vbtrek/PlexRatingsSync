@@ -176,7 +176,7 @@ SELECT id, name FROM accounts WHERE id > 0;";
         var path = Environment.ExpandEnvironmentVariables(@"%LOCALAPPDATA%\Plex Media Server\Plug-in Support\Databases");
 
         if (Directory.Exists(path))
-          openFileDialog.FileName = path;
+          openFileDialog.InitialDirectory = path;
       }
       else
         openFileDialog.FileName = txtPlexDatabase.Text;

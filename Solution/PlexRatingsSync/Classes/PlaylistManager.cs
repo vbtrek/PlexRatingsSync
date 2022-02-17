@@ -30,9 +30,6 @@ namespace DS.PlexRatingsSync
 
         args.ReportProgress($"Syncing Playlist \"{playlist.FullPlaylistName}\"...");
 
-        // Find playlist by name
-        string sql = string.Empty;
-
         bool isUpdate = false;
 
         int? playlistId = GetPlexPlaylistId(args, playlist);

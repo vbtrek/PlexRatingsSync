@@ -202,7 +202,7 @@ namespace DS.PlexRatingsSync
     private int? ReadItunesRating()
     {
       // TODO_DS1 Need to get current iTunes Rating somehow
-      Debug.Assert(false);
+      //Debug.Assert(false);
 
       return 0;
     }

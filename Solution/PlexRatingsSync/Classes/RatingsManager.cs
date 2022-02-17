@@ -107,6 +107,8 @@ WHERE LS.section_type = 8";
         case SyncModes.TwoWay:
           int? currentNormalisedSourceRating = CurrentNormalisedSourceRating(args);
 
+          int? normalisedPlexRating = args.NormalisedRating(args.CurrentPlexRating, RatingConvert.Plex);
+
           if (Settings.ClashHandling != ClashWinner.AlwaysPrompt)
           {
             if (args.CurrentPlexRating == 0 && currentNormalisedSourceRating > 0)
@@ -135,7 +137,7 @@ WHERE LS.section_type = 8";
 
               TaskDialogs dlg = new TaskDialogs();
               
-              result = dlg.RatingsClash($"{args.PlexTitle}{Environment.NewLine}{fi.Name}", (int)args.CurrentPlexRating, (int)currentNormalisedSourceRating);
+              result = dlg.RatingsClash($"{args.PlexTitle}{Environment.NewLine}{fi.Name}", normalisedPlexRating, currentNormalisedSourceRating);
             }
           }
 
@@ -153,7 +155,7 @@ WHERE LS.section_type = 8";
 
     private static void UpdatePlexDbRating(SyncArgs args)
     {
-      int? currentNormalisedSourceRating = CurrentNormalisedSourceRating(args);
+      int? currentRatingInPlexFormat = CurrentRatingInPlexFormat(args);
 
       int? plexDbRating = args.CurrentPlexRating;
 
@@ -170,7 +172,7 @@ WHERE LS.section_type = 8";
         message = string.Format("Updating Plex rating for file \"{0}\" from {1} to {2}",
             args.CurrentFile.file,
             plexDbRating == null ? 0 : plexDbRating,
-            currentNormalisedSourceRating == null ? 0 : currentNormalisedSourceRating);
+            currentRatingInPlexFormat == null ? 0 : currentRatingInPlexFormat);
 
         MessageManager.Instance.MessageWrite(new object(), MessageItem.MessageLevel.Information,
             message);
@@ -181,13 +183,13 @@ WHERE LS.section_type = 8";
         sql = @"
 UPDATE metadata_item_settings SET rating = {0} WHERE account_id = {1} AND guid = '{2}'";
 
-        sql = string.Format(sql, currentNormalisedSourceRating, Settings.PlexAccountId, args.CurrentFile.guid);
+        sql = string.Format(sql, currentRatingInPlexFormat, Settings.PlexAccountId, args.CurrentFile.guid);
       }
       else
       {
         message = string.Format("Creating Plex rating for file \"{0}\", rating {1}",
             args.CurrentFile.file,
-            currentNormalisedSourceRating == null ? 0 : currentNormalisedSourceRating);
+            currentRatingInPlexFormat == null ? 0 : currentRatingInPlexFormat);
 
         MessageManager.Instance.MessageWrite(new object(), MessageItem.MessageLevel.Information,
             message);
@@ -199,7 +201,7 @@ UPDATE metadata_item_settings SET rating = {0} WHERE account_id = {1} AND guid =
 INSERT INTO metadata_item_settings ([account_id], [guid], [rating], [view_offset], [view_count], [last_viewed_at], [created_at], [updated_at])
 VALUES({0}, '{1}', {2}, NULL, 0, NULL, DATE('now'), DATE('now'));";
 
-        sql = string.Format(sql, Settings.PlexAccountId, args.CurrentFile.guid, currentNormalisedSourceRating);
+        sql = string.Format(sql, Settings.PlexAccountId, args.CurrentFile.guid, currentRatingInPlexFormat);
       }
 #if DEBUG
       Debug.Print(message);
@@ -250,7 +252,7 @@ VALUES({0}, '{1}', {2}, NULL, 0, NULL, DATE('now'), DATE('now'));";
       MessageManager.Instance.MessageWrite(new object(), MessageItem.MessageLevel.Information, message);
     }
 
-    private static int? CurrentNormalisedSourceRating(SyncArgs args)
+    private static int? CurrentRatingInPlexFormat(SyncArgs args)
     {
       switch (Settings.SyncSource)
       {
@@ -259,6 +261,20 @@ VALUES({0}, '{1}', {2}, NULL, 0, NULL, DATE('now'), DATE('now'));";
 
         case SyncSources.ITunesLibrary:
           return args.ConvertRating(args.CurrentItunesRating, RatingConvert.Itunes, RatingConvert.Plex);
+      }
+
+      return null;
+    }
+
+    private static int? CurrentNormalisedSourceRating(SyncArgs args)
+    {
+      switch (Settings.SyncSource)
+      {
+        case SyncSources.FileProperties:
+          return args.NormalisedRating(args.CurrentFileRating, RatingConvert.File);
+
+        case SyncSources.ITunesLibrary:
+          return args.NormalisedRating(args.CurrentItunesRating, RatingConvert.Itunes);
       }
 
       return null;

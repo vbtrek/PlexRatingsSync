@@ -12,7 +12,7 @@ namespace DS.PlexRatingsSync
 
     private RatingsClashResult _RatingsClashReturn = RatingsClashResult.Cancel;
 
-    public RatingsClashResult RatingsClash(string file, int plexRating, int fileRating)
+    public RatingsClashResult RatingsClash(string file, int? plexRating, int? fileRating)
     {
       // Error dialog
       _TaskDialog = new TaskDialog
@@ -27,13 +27,25 @@ namespace DS.PlexRatingsSync
         Text = file + "\n\nChoose which rating you would like to keep:"
       };
 
-      TaskDialogCommandLink plexButton = new TaskDialogCommandLink("plexButton",
-          "Plex " + plexRating.ToString() + " Stars\nClick here to overwrite the file rating with the Plex rating");
+      string plexRatingDisplay = plexRating == null ? "UnSet" : plexRating.ToString();
+
+      string plexButtonText = "Plex " + plexRatingDisplay + " Stars\nClick here to overwrite the file rating with the Plex rating";
+
+      if (Settings.SyncSource == SyncSources.ITunesLibrary)
+        plexButtonText = "Plex " + plexRatingDisplay + " Stars\nClick here to overwrite the iTunes rating with the Plex rating";
+
+      string fileRatingDisplay = fileRating == null ? "UnSet" : fileRating.ToString();
+
+      string fileButtonText = "File " + fileRatingDisplay + " Stars\nClick here to overwrite the Plex rating with the file rating";
+
+      if (Settings.SyncSource == SyncSources.ITunesLibrary)
+        fileButtonText = "iTunes " + fileRatingDisplay + " Stars\nClick here to overwrite the Plex rating with the iTunes rating";
+
+      TaskDialogCommandLink plexButton = new TaskDialogCommandLink("plexButton", plexButtonText);
       
       plexButton.Click += new EventHandler(plexButton_Click);
 
-      TaskDialogCommandLink fileButton = new TaskDialogCommandLink("fileButton",
-          "File " + fileRating.ToString() + " Stars\nClick here to overwrite the Plex rating with the file rating");
+      TaskDialogCommandLink fileButton = new TaskDialogCommandLink("fileButton", fileButtonText);
       
       fileButton.Click += new EventHandler(fileButton_Click);
 
