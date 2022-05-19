@@ -206,7 +206,7 @@ VALUES({0}, '{1}', {2}, NULL, 0, NULL, DATE('now'), DATE('now'));";
 #if DEBUG
       Debug.Print(message);
 #else
-      m_PlexDb.ExecutePlexSql(sql);
+      args.PlexDb.ExecutePlexSql(sql);
 #endif
     }
 
@@ -228,7 +228,7 @@ VALUES({0}, '{1}', {2}, NULL, 0, NULL, DATE('now'), DATE('now'));";
 #if DEBUG
       Debug.Print(message);
 #else
-      so.Properties.System.Rating.Value = newRating;
+      so.Properties.System.Rating.Value = newFileRating;
 #endif
 
       MessageManager.Instance.MessageWrite(new object(), MessageItem.MessageLevel.Information, message);
