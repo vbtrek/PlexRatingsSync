@@ -78,6 +78,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\Data\ItunesLibrary.cs" />
     <Compile Include="Classes\EnumHelper.cs" />
     <Compile Include="Classes\Enums.cs" />
     <Compile Include="Classes\PlaylistManager.cs" />

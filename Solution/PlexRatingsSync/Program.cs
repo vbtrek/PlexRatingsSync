@@ -14,7 +14,7 @@ namespace DS.PlexRatingsSync
     /// The main entry point for the application.
     /// </summary>
     [STAThread]
-    static void Main()
+    static void Main(string[] args)
     {
       Application.EnableVisualStyles();
 
@@ -44,7 +44,18 @@ namespace DS.PlexRatingsSync
 
       System.Reflection.AssemblyName assemblyName = assembly.GetName();
 
-      Application.Run(new Main());
+      if (args.Any(a => a.Equals("/options", StringComparison.OrdinalIgnoreCase))
+        || args.Any(a => a.Equals("/settings", StringComparison.OrdinalIgnoreCase)))
+      {
+        Settings.GetPreferences();
+
+        using (Options2 frm = new Options2())
+        {
+          frm.ShowDialog();
+        }
+      }
+      else
+        Application.Run(new Main());
     }
   }
 }

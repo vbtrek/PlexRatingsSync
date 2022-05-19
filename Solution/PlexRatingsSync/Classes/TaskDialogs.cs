@@ -62,14 +62,14 @@ namespace DS.PlexRatingsSync
 
     private void plexButton_Click(object sender, EventArgs e)
     {
-      _RatingsClashReturn = RatingsClashResult.UsePlex;
+      _RatingsClashReturn = RatingsClashResult.UpdateFileOrItunes;
 
       if (_TaskDialog != null) _TaskDialog.Close();
     }
 
     private void fileButton_Click(object sender, EventArgs e)
     {
-      _RatingsClashReturn = RatingsClashResult.UseFileOrItunes;
+      _RatingsClashReturn = RatingsClashResult.UpdatePlex;
 
       if (_TaskDialog != null) _TaskDialog.Close();
     }

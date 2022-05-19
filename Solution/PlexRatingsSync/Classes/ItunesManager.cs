@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
+using System.Xml.Serialization;
 using System.Xml.XPath;
 
 namespace DS.PlexRatingsSync
@@ -44,7 +45,18 @@ namespace DS.PlexRatingsSync
 
       documentSettings.DtdProcessing = DtdProcessing.Ignore;
 
-      var xmlReader = XmlTextReader.Create(_ItunesLibrary, documentSettings);
+      /*
+      XmlSerializer serializer = new XmlSerializer(typeof(ItunesLibrary));
+
+      serializer.UnknownElement += Serializer_UnknownElement;
+
+      using (var reader = XmlReader.Create(_ItunesLibrary, documentSettings))
+      {
+        var test = (ItunesLibrary)serializer.Deserialize(reader);
+      }
+      */
+
+      var xmlReader = XmlReader.Create(_ItunesLibrary, documentSettings);
 
       XPathDocument itunesDocument = new XPathDocument(xmlReader);
 
@@ -56,6 +68,30 @@ namespace DS.PlexRatingsSync
 
       Cursor.Current = Cursors.Default;
     }
+
+    /*
+    private string _LastKey = string.Empty;
+
+    private void Serializer_UnknownElement(object sender, XmlElementEventArgs e)
+    {
+      if (e.ObjectBeingDeserialized is ItunesDict dict)
+      {
+        if (e.Element.LocalName.Equals("key", StringComparison.OrdinalIgnoreCase))
+        {
+          _LastKey = e.Element.InnerText;
+        }
+        else
+        {
+          if (!string.IsNullOrWhiteSpace(_LastKey))
+          {
+            dict.AddKeyValuePair(_LastKey, e.Element.InnerText);
+          }
+
+          _LastKey = string.Empty;
+        }
+      }
+    }
+    */
 
     private void ExtractPlaylists(XPathDocument itunesDocument, bool readTracks)
     {
@@ -157,7 +193,12 @@ namespace DS.PlexRatingsSync
         track.Name = navigator.SelectSingleNode("key[.='Name']/following-sibling::*").ToString();
         
         track.Location = navigator.SelectSingleNode("key[.='Location']/following-sibling::*").ToString();
-        
+
+        var rating = navigator.SelectSingleNode("key[.='Rating']/following-sibling::*");
+
+        if (rating != null)
+          track.Rating = rating.ValueAsInt;
+
         ItunesTracks.Add(track);
       }
     }

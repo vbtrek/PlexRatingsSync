@@ -202,9 +202,14 @@ namespace DS.PlexRatingsSync
     private int? ReadItunesRating()
     {
       // TODO_DS1 Need to get current iTunes Rating somehow
-      //Debug.Assert(false);
+      // TODO_DS1 Test a UNC file
 
-      return 0;
+      var itunesEntry = ItunesData.ItunesTracks.FirstOrDefault(t => t.ProperLocation == CurrentFile.file);
+
+      if (itunesEntry != null)
+        return itunesEntry.Rating;
+
+      return null;
     }
 
     private static int? NormaliseFileRating(int? fileRating)

@@ -36,13 +36,14 @@ namespace DS.PlexRatingsSync
       base.Dispose(disposing);
     }
 
-    private void Form1_Load(object sender, EventArgs e)
+    private void Main_Load(object sender, EventArgs e)
     {
       MessageManager.Instance.MessageWrite(this, MessageItem.MessageLevel.Information,
           "Starting up...");
 
       Version currentVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-      this.Text = String.Format("{0} v{1}", this.Text, currentVersion);
+      
+      Text = $"{Text} v{currentVersion}";
 
       lblStatus.Text = string.Empty;
       lblTotals.Text = string.Empty;
@@ -52,7 +53,7 @@ namespace DS.PlexRatingsSync
       Settings.GetPreferences();
     }
 
-    private void Form1_Shown(object sender, EventArgs e)
+    private void Main_Shown(object sender, EventArgs e)
     {
       bool ok = true;
 

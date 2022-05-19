@@ -119,7 +119,7 @@ namespace DS.PlexRatingsSync
       if (cboSyncMode.SelectedItem is EnumHelper.EnumValue mode)
         Settings.SyncHandling = (SyncModes)mode.EnumItem;
 
-      if (cboSyncMode.SelectedItem is EnumHelper.EnumValue clash)
+      if (cboClashWinner.SelectedItem is EnumHelper.EnumValue clash)
         Settings.ClashHandling = (ClashWinner)clash.EnumItem;
 
       Settings.SavePreferences();
@@ -133,6 +133,17 @@ namespace DS.PlexRatingsSync
           return (SyncSources)source.EnumItem;
 
         return SyncSources.FileProperties;
+      }
+    }
+
+    private SyncModes SelectedSyncMode
+    {
+      get
+      {
+        if (cboSyncMode.SelectedItem is EnumHelper.EnumValue mode)
+          return (SyncModes)mode.EnumItem;
+
+        return SyncModes.FileOrItunesToPlex;
       }
     }
 
@@ -240,53 +251,99 @@ SELECT id, name FROM accounts WHERE id > 0;";
     {
       var modes = EnumHelper.GetAll<SyncModes>();
 
-      foreach (var item in modes)
+      for (int i = modes.Count - 1; i >= 0; i--)
       {
+        var mode = modes[i];
+
         switch (SelectedSource)
         {
           case SyncSources.FileProperties:
-            if (item.EnumItem.Equals(SyncModes.FileOrItunesToPlex))
-              item.Description = "File Properties to Plex";
+            if (mode.EnumItem.Equals(SyncModes.FileOrItunesToPlex))
+              mode.Description = "File Properties to Plex";
 
-            if (item.EnumItem.Equals(SyncModes.PlexToFileOrItunes))
-              item.Description = "Plex to File Properties";
+            if (mode.EnumItem.Equals(SyncModes.PlexToFileOrItunes))
+              mode.Description = "Plex to File Properties";
 
             break;
 
           case SyncSources.ITunesLibrary:
-            if (item.EnumItem.Equals(SyncModes.FileOrItunesToPlex))
-              item.Description = "iTunes Library to Plex";
+            if (mode.EnumItem.Equals(SyncModes.FileOrItunesToPlex))
+              mode.Description = "iTunes Library to Plex";
 
-            if (item.EnumItem.Equals(SyncModes.PlexToFileOrItunes))
-              item.Description = "Plex to iTunes Library";
+            if (mode.EnumItem.Equals(SyncModes.PlexToFileOrItunes))
+              modes.Remove(mode);
+
+            if (mode.EnumItem.Equals(SyncModes.TwoWay))
+              modes.Remove(mode);
 
             break;
         }
       }
 
       cboSyncMode.DataSource = modes;
+    }
 
-      var clashWinner = EnumHelper.GetAll<ClashWinner>();
+    private void cboSyncMode_SelectedIndexChanged(object sender, EventArgs e)
+    {
+      var clashWinners = EnumHelper.GetAll<ClashWinner>();
 
-      foreach (var item in clashWinner)
+      for (int i = clashWinners.Count - 1; i >= 0; i--)
       {
+        var clashWinner = clashWinners[i];
+
         switch (SelectedSource)
         {
           case SyncSources.FileProperties:
-            if (item.EnumItem.Equals(ClashWinner.FileOrItunes))
-              item.Description = "File Properties Always Wins";
+            if (clashWinner.EnumItem.Equals(ClashWinner.FileOrItunes))
+              clashWinner.Description = "File Properties Always Wins";
 
             break;
 
           case SyncSources.ITunesLibrary:
-            if (item.EnumItem.Equals(ClashWinner.FileOrItunes))
-              item.Description = "iTunes Library Always Wins";
+            if (clashWinner.EnumItem.Equals(ClashWinner.FileOrItunes))
+              clashWinner.Description = "iTunes Library Always Wins";
 
+            break;
+        }
+
+        switch (SelectedSyncMode)
+        {
+          case SyncModes.FileOrItunesToPlex:
+            if (clashWinner.EnumItem.Equals(ClashWinner.Plex))
+              clashWinners.Remove(clashWinner);
+
+            if (clashWinner.EnumItem.Equals(ClashWinner.Skip))
+              clashWinners.Remove(clashWinner);
+
+            if (clashWinner.EnumItem.Equals(ClashWinner.Prompt))
+              clashWinners.Remove(clashWinner);
+
+            if (clashWinner.EnumItem.Equals(ClashWinner.AlwaysPrompt))
+              clashWinners.Remove(clashWinner);
+
+            break;
+
+          case SyncModes.PlexToFileOrItunes:
+            if (clashWinner.EnumItem.Equals(ClashWinner.FileOrItunes))
+              clashWinners.Remove(clashWinner);
+
+            if (clashWinner.EnumItem.Equals(ClashWinner.Skip))
+              clashWinners.Remove(clashWinner);
+
+            if (clashWinner.EnumItem.Equals(ClashWinner.Prompt))
+              clashWinners.Remove(clashWinner);
+
+            if (clashWinner.EnumItem.Equals(ClashWinner.AlwaysPrompt))
+              clashWinners.Remove(clashWinner);
+
+            break;
+
+          case SyncModes.TwoWay:
             break;
         }
       }
 
-      cboClashWinner.DataSource = clashWinner;
+      cboClashWinner.DataSource = clashWinners;
     }
   }
 

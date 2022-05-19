@@ -49,8 +49,8 @@ namespace DS.PlexRatingsSync
   public enum RatingsClashResult
   {
     Cancel = 0,
-    UsePlex = 1,
-    UseFileOrItunes = 2
+    UpdatePlex = 1,
+    UpdateFileOrItunes = 2
   }
 
   public enum RatingConvert

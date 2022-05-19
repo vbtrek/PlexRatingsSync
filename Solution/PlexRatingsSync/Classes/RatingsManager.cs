@@ -67,11 +67,11 @@ WHERE LS.section_type = 8";
             {
               switch (DetermineClashHandling(args))
               {
-                case RatingsClashResult.UsePlex:
+                case RatingsClashResult.UpdatePlex:
                   UpdatePlexDbRating(args);
                   break;
 
-                case RatingsClashResult.UseFileOrItunes:
+                case RatingsClashResult.UpdateFileOrItunes:
                   if (Settings.SyncSource == SyncSources.FileProperties) UpdateFileRating(args);
                   if (Settings.SyncSource == SyncSources.ITunesLibrary) UpdateItunesRating(args);
                   break;
@@ -97,11 +97,11 @@ WHERE LS.section_type = 8";
       switch (Settings.SyncHandling)
       {
         case SyncModes.FileOrItunesToPlex:
-          result = RatingsClashResult.UseFileOrItunes;
+          result = RatingsClashResult.UpdatePlex;
           break;
 
         case SyncModes.PlexToFileOrItunes:
-          result = RatingsClashResult.UsePlex;
+          result = RatingsClashResult.UpdateFileOrItunes;
           break;
 
         case SyncModes.TwoWay:
@@ -111,11 +111,11 @@ WHERE LS.section_type = 8";
 
           if (Settings.ClashHandling != ClashWinner.AlwaysPrompt)
           {
-            if (args.CurrentPlexRating == 0 && currentNormalisedSourceRating > 0)
-              result = RatingsClashResult.UseFileOrItunes;
+            if ((args.CurrentPlexRating ?? 0) == 0 && currentNormalisedSourceRating > 0)
+              result = RatingsClashResult.UpdatePlex;
 
-            if (currentNormalisedSourceRating == 0 && args.CurrentPlexRating > 0)
-              result = RatingsClashResult.UsePlex;
+            if ((currentNormalisedSourceRating ?? 0) == 0 && args.CurrentPlexRating > 0)
+              result = RatingsClashResult.UpdateFileOrItunes;
           }
 
           if (result == RatingsClashResult.Cancel)
@@ -123,11 +123,11 @@ WHERE LS.section_type = 8";
             switch (Settings.ClashHandling)
             {
               case ClashWinner.FileOrItunes:
-                result = RatingsClashResult.UseFileOrItunes;
+                result = RatingsClashResult.UpdatePlex;
                 break;
 
               case ClashWinner.Plex:
-                result = RatingsClashResult.UsePlex;
+                result = RatingsClashResult.UpdateFileOrItunes;
                 break;
             }
 
@@ -248,6 +248,7 @@ VALUES({0}, '{1}', {2}, NULL, 0, NULL, DATE('now'), DATE('now'));";
           newItunesRating == null ? 0 : newItunesRating);
 
       // TODO_DS1 Update iTunes
+      //args.ItunesData.SetItunesRating();
 
       MessageManager.Instance.MessageWrite(new object(), MessageItem.MessageLevel.Information, message);
     }

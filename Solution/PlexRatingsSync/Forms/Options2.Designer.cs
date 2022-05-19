@@ -64,7 +64,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
       this.txtPlexDatabase.Location = new System.Drawing.Point(97, 40);
       this.txtPlexDatabase.Name = "txtPlexDatabase";
-      this.txtPlexDatabase.Size = new System.Drawing.Size(444, 21);
+      this.txtPlexDatabase.Size = new System.Drawing.Size(444, 37);
       this.txtPlexDatabase.TabIndex = 1;
       this.txtPlexDatabase.TextChanged += new System.EventHandler(this.txtPlexDatabase_TextChanged);
       // 
@@ -76,7 +76,7 @@
       this.cboPlexAccount.FormattingEnabled = true;
       this.cboPlexAccount.Location = new System.Drawing.Point(97, 65);
       this.cboPlexAccount.Name = "cboPlexAccount";
-      this.cboPlexAccount.Size = new System.Drawing.Size(444, 21);
+      this.cboPlexAccount.Size = new System.Drawing.Size(444, 38);
       this.cboPlexAccount.TabIndex = 2;
       // 
       // cmdPlexDatabase
@@ -95,7 +95,7 @@
       this.lblPlexDatabase.AutoSize = true;
       this.lblPlexDatabase.Location = new System.Drawing.Point(12, 44);
       this.lblPlexDatabase.Name = "lblPlexDatabase";
-      this.lblPlexDatabase.Size = new System.Drawing.Size(79, 13);
+      this.lblPlexDatabase.Size = new System.Drawing.Size(174, 30);
       this.lblPlexDatabase.TabIndex = 4;
       this.lblPlexDatabase.Text = "Plex database:";
       // 
@@ -104,7 +104,7 @@
       this.PlexAccount.AutoSize = true;
       this.PlexAccount.Location = new System.Drawing.Point(12, 68);
       this.PlexAccount.Name = "PlexAccount";
-      this.PlexAccount.Size = new System.Drawing.Size(72, 13);
+      this.PlexAccount.Size = new System.Drawing.Size(162, 30);
       this.PlexAccount.TabIndex = 5;
       this.PlexAccount.Text = "Plex account:";
       // 
@@ -131,6 +131,7 @@
       this.grdPlaylists.Location = new System.Drawing.Point(32, 175);
       this.grdPlaylists.Name = "grdPlaylists";
       this.grdPlaylists.RowHeadersVisible = false;
+      this.grdPlaylists.RowHeadersWidth = 92;
       this.grdPlaylists.Size = new System.Drawing.Size(544, 167);
       this.grdPlaylists.TabIndex = 6;
       // 
@@ -140,6 +141,7 @@
       this.colPlaylist.DataPropertyName = "Playlist";
       this.colPlaylist.FillWeight = 80F;
       this.colPlaylist.HeaderText = "Playlist";
+      this.colPlaylist.MinimumWidth = 11;
       this.colPlaylist.Name = "colPlaylist";
       this.colPlaylist.ReadOnly = true;
       // 
@@ -149,6 +151,7 @@
       this.colChecked.FillWeight = 20F;
       this.colChecked.FlatStyle = System.Windows.Forms.FlatStyle.System;
       this.colChecked.HeaderText = "Selected";
+      this.colChecked.MinimumWidth = 11;
       this.colChecked.Name = "colChecked";
       // 
       // chkSyncPlaylists
@@ -156,7 +159,7 @@
       this.chkSyncPlaylists.AutoSize = true;
       this.chkSyncPlaylists.Location = new System.Drawing.Point(15, 119);
       this.chkSyncPlaylists.Name = "chkSyncPlaylists";
-      this.chkSyncPlaylists.Size = new System.Drawing.Size(160, 17);
+      this.chkSyncPlaylists.Size = new System.Drawing.Size(356, 34);
       this.chkSyncPlaylists.TabIndex = 10;
       this.chkSyncPlaylists.Text = "Sync iTunes playlists to Plex";
       this.chkSyncPlaylists.UseVisualStyleBackColor = true;
@@ -168,7 +171,7 @@
       this.lblItunesLibrary.Enabled = false;
       this.lblItunesLibrary.Location = new System.Drawing.Point(29, 152);
       this.lblItunesLibrary.Name = "lblItunesLibrary";
-      this.lblItunesLibrary.Size = new System.Drawing.Size(75, 13);
+      this.lblItunesLibrary.Size = new System.Drawing.Size(172, 30);
       this.lblItunesLibrary.TabIndex = 13;
       this.lblItunesLibrary.Text = "iTunes library:";
       // 
@@ -191,7 +194,7 @@
       this.txtItunesLibrary.Enabled = false;
       this.txtItunesLibrary.Location = new System.Drawing.Point(114, 148);
       this.txtItunesLibrary.Name = "txtItunesLibrary";
-      this.txtItunesLibrary.Size = new System.Drawing.Size(427, 21);
+      this.txtItunesLibrary.Size = new System.Drawing.Size(427, 37);
       this.txtItunesLibrary.TabIndex = 11;
       this.txtItunesLibrary.TextChanged += new System.EventHandler(this.txtItunesLibrary_TextChanged);
       // 
@@ -200,9 +203,9 @@
       this.chkRemoveEmptyPlaylists.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
       this.chkRemoveEmptyPlaylists.AutoSize = true;
       this.chkRemoveEmptyPlaylists.Enabled = false;
-      this.chkRemoveEmptyPlaylists.Location = new System.Drawing.Point(32, 348);
+      this.chkRemoveEmptyPlaylists.Location = new System.Drawing.Point(32, 331);
       this.chkRemoveEmptyPlaylists.Name = "chkRemoveEmptyPlaylists";
-      this.chkRemoveEmptyPlaylists.Size = new System.Drawing.Size(139, 17);
+      this.chkRemoveEmptyPlaylists.Size = new System.Drawing.Size(305, 34);
       this.chkRemoveEmptyPlaylists.TabIndex = 14;
       this.chkRemoveEmptyPlaylists.Text = "Remove empty Playlists";
       this.chkRemoveEmptyPlaylists.UseVisualStyleBackColor = true;
@@ -211,9 +214,9 @@
       // 
       this.chkSyncRatings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
       this.chkSyncRatings.AutoSize = true;
-      this.chkSyncRatings.Location = new System.Drawing.Point(15, 398);
+      this.chkSyncRatings.Location = new System.Drawing.Point(15, 381);
       this.chkSyncRatings.Name = "chkSyncRatings";
-      this.chkSyncRatings.Size = new System.Drawing.Size(124, 17);
+      this.chkSyncRatings.Size = new System.Drawing.Size(270, 34);
       this.chkSyncRatings.TabIndex = 15;
       this.chkSyncRatings.Text = "Sync Ratings to Plex";
       this.chkSyncRatings.UseVisualStyleBackColor = true;
@@ -250,7 +253,7 @@
       this.cboSyncSource.FormattingEnabled = true;
       this.cboSyncSource.Location = new System.Drawing.Point(323, 396);
       this.cboSyncSource.Name = "cboSyncSource";
-      this.cboSyncSource.Size = new System.Drawing.Size(255, 21);
+      this.cboSyncSource.Size = new System.Drawing.Size(255, 38);
       this.cboSyncSource.TabIndex = 19;
       this.cboSyncSource.SelectedIndexChanged += new System.EventHandler(this.cboSyncSource_SelectedIndexChanged);
       // 
@@ -263,8 +266,9 @@
       this.cboSyncMode.FormattingEnabled = true;
       this.cboSyncMode.Location = new System.Drawing.Point(323, 423);
       this.cboSyncMode.Name = "cboSyncMode";
-      this.cboSyncMode.Size = new System.Drawing.Size(255, 21);
+      this.cboSyncMode.Size = new System.Drawing.Size(255, 38);
       this.cboSyncMode.TabIndex = 20;
+      this.cboSyncMode.SelectedIndexChanged += new System.EventHandler(this.cboSyncMode_SelectedIndexChanged);
       // 
       // lblSyncSource
       // 
@@ -273,7 +277,7 @@
       this.lblSyncSource.Enabled = false;
       this.lblSyncSource.Location = new System.Drawing.Point(246, 399);
       this.lblSyncSource.Name = "lblSyncSource";
-      this.lblSyncSource.Size = new System.Drawing.Size(69, 13);
+      this.lblSyncSource.Size = new System.Drawing.Size(155, 30);
       this.lblSyncSource.TabIndex = 21;
       this.lblSyncSource.Text = "Sync source:";
       // 
@@ -284,7 +288,7 @@
       this.lblSyncMode.Enabled = false;
       this.lblSyncMode.Location = new System.Drawing.Point(246, 426);
       this.lblSyncMode.Name = "lblSyncMode";
-      this.lblSyncMode.Size = new System.Drawing.Size(63, 13);
+      this.lblSyncMode.Size = new System.Drawing.Size(144, 30);
       this.lblSyncMode.TabIndex = 22;
       this.lblSyncMode.Text = "Sync mode:";
       // 
@@ -295,7 +299,7 @@
       this.lblClashWinner.Enabled = false;
       this.lblClashWinner.Location = new System.Drawing.Point(246, 453);
       this.lblClashWinner.Name = "lblClashWinner";
-      this.lblClashWinner.Size = new System.Drawing.Size(72, 13);
+      this.lblClashWinner.Size = new System.Drawing.Size(164, 30);
       this.lblClashWinner.TabIndex = 24;
       this.lblClashWinner.Text = "Clash winner:";
       // 
@@ -308,7 +312,7 @@
       this.cboClashWinner.FormattingEnabled = true;
       this.cboClashWinner.Location = new System.Drawing.Point(324, 450);
       this.cboClashWinner.Name = "cboClashWinner";
-      this.cboClashWinner.Size = new System.Drawing.Size(255, 21);
+      this.cboClashWinner.Size = new System.Drawing.Size(255, 38);
       this.cboClashWinner.TabIndex = 23;
       // 
       // etchedLine4
@@ -358,7 +362,7 @@
       // Options2
       // 
       this.AcceptButton = this.cmdOk;
-      this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+      this.AutoScaleDimensions = new System.Drawing.SizeF(14F, 30F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.CancelButton = this.cmdCancel;
       this.ClientSize = new System.Drawing.Size(590, 540);
