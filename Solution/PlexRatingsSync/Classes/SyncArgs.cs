@@ -1,5 +1,6 @@
 ﻿using DS.Library.MessageHandling;
 using Microsoft.WindowsAPICodePack.Shell;
+using Sentry;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -186,6 +187,8 @@ namespace DS.PlexRatingsSync
         }
         catch (Exception ex)
         {
+          SentrySdk.CaptureException(ex);
+
           MessageManager.Instance.ExceptionWrite(new object(), ex);
 
           return null;
@@ -257,15 +260,15 @@ namespace DS.PlexRatingsSync
     {
       switch (itunesRating)
       {
-        case 20:
+        case int n when (n >=1 && n <= 20):
           return 1;
-        case 40:
+        case int n when (n >= 21 && n <= 40):
           return 2;
-        case 60:
+        case int n when (n >= 41 && n <= 60):
           return 3;
-        case 80:
+        case int n when (n >= 61 && n <= 80):
           return 4;
-        case 100:
+        case int n when (n >= 81 && n <= 100):
           return 5;
         default:
           return null;

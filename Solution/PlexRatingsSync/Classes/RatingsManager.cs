@@ -1,5 +1,6 @@
 ﻿using DS.Library.MessageHandling;
 using Microsoft.WindowsAPICodePack.Shell;
+using Sentry;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -80,12 +81,16 @@ WHERE LS.section_type = 8";
           }
           catch (Exception ex)
           {
+            SentrySdk.CaptureException(ex);
+
             MessageManager.Instance.ExceptionWrite(new object(), ex);
           }
         }
       }
       catch (Exception ex)
       {
+        SentrySdk.CaptureException(ex);
+
         MessageManager.Instance.ExceptionWrite(new object(), ex);
       }
     }

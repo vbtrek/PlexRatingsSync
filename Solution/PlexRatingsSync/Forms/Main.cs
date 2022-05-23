@@ -7,6 +7,7 @@ using DS.Library.MessageHandling;
 using System.Diagnostics;
 using Microsoft.WindowsAPICodePack.Shell;
 using System.Threading;
+using Sentry;
 
 namespace DS.PlexRatingsSync
 {
@@ -38,43 +39,57 @@ namespace DS.PlexRatingsSync
 
     private void Main_Load(object sender, EventArgs e)
     {
-      MessageManager.Instance.MessageWrite(this, MessageItem.MessageLevel.Information,
-          "Starting up...");
+      try
+      {
+        MessageManager.Instance.MessageWrite(this, MessageItem.MessageLevel.Information,
+            "Starting up...");
 
-      Version currentVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-      
-      Text = $"{Text} v{currentVersion}";
+        Version currentVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
 
-      lblStatus.Text = string.Empty;
-      lblTotals.Text = string.Empty;
-      lblPlex.Text = string.Empty;
-      lblItunes.Text = string.Empty;
+        Text = $"{Text} v{currentVersion}";
 
-      Settings.GetPreferences();
+        lblStatus.Text = string.Empty;
+        lblTotals.Text = string.Empty;
+        lblPlex.Text = string.Empty;
+        lblItunes.Text = string.Empty;
+
+        Settings.GetPreferences();
+      }
+      catch (Exception ex)
+      {
+        SentrySdk.CaptureException(ex);
+      }
     }
 
     private void Main_Shown(object sender, EventArgs e)
     {
-      bool ok = true;
-
-      if (!IsSettingValid(false))
+      try
       {
-        cmdOptions.Enabled = false;
+        bool ok = true;
 
-        using (Options2 frm = new Options2())
+        if (!IsSettingValid(false))
         {
-          frm.ShowDialog(this);
+          cmdOptions.Enabled = false;
+
+          using (Options2 frm = new Options2())
+          {
+            frm.ShowDialog(this);
+          }
+
+          cmdOptions.Enabled = true;
+
+          if (!IsSettingValid(true)) ok = false;
         }
 
-        cmdOptions.Enabled = true;
-
-        if (!IsSettingValid(true)) ok = false;
+        if (ok)
+          StartProcessing();
+        else
+          Close();
       }
-
-      if (ok)
-        StartProcessing();
-      else
-        Close();
+      catch (Exception ex)
+      {
+        SentrySdk.CaptureException(ex);
+      }
     }
 
     private void Main_FormClosing(object sender, FormClosingEventArgs e)
@@ -268,6 +283,8 @@ namespace DS.PlexRatingsSync
       }
       catch (Exception ex)
       {
+        SentrySdk.CaptureException(ex);
+
         MessageManager.Instance.ExceptionWrite(this, ex);
       }
     }
