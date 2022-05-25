@@ -61,7 +61,7 @@ namespace DS.PlexRatingsSync
         {
           Settings.GetPreferences();
 
-          using (Options2 frm = new Options2())
+          using (Options3 frm = new Options3())
             frm.ShowDialog();
         }
         else

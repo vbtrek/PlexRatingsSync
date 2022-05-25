@@ -39,6 +39,8 @@ namespace DS.PlexRatingsSync
       RemoveEmptyPlaylists =
           bool.Parse(Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "RemoveEmptyPlaylists", "true").ToString());
 
+      SyncPlaylists = false;
+
       ChosenPlaylists =
           Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "Playlists", String.Empty)
           .ToString().Split(',').ToList();

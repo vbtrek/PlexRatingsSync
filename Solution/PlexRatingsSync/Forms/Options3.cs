@@ -8,16 +8,16 @@ using System.Windows.Forms;
 
 namespace DS.PlexRatingsSync
 {
-  public partial class Options2 : Form
+  public partial class Options3 : Form
   {
     private ItunesManager _ItunesManager = new ItunesManager(Settings.ItunesLibraryPath);
 
-    public Options2()
+    public Options3()
     {
       InitializeComponent();
     }
 
-    private void Options2_Load(object sender, EventArgs e)
+    private void Options3_Load(object sender, EventArgs e)
     {
       _ItunesManager.ReadItunesData(true, false);
 
@@ -37,11 +37,7 @@ namespace DS.PlexRatingsSync
 
       cboPlexAccount.Text = Settings.PlexAccount;
 
-      chkSyncPlaylists.Checked = Settings.SyncPlaylists;
-
       txtItunesLibrary.Text = Settings.ItunesLibraryPath;
-
-      chkRemoveEmptyPlaylists.Checked = Settings.RemoveEmptyPlaylists;
 
       AddPlaylists();
 
@@ -88,23 +84,19 @@ namespace DS.PlexRatingsSync
       {
         playlist.Selected = Settings.ChosenPlaylists.Contains(playlist.Playlist);
       }
-
-      grdPlaylists.AutoGenerateColumns = false;
-
-      grdPlaylists.DataSource = selectedPlaylists;
     }
 
     private void SavePreferences()
     {
       Settings.PlexDatabase = txtPlexDatabase.Text;
       Settings.PlexAccount = cboPlexAccount.Text;
-      Settings.SyncPlaylists = chkSyncPlaylists.Checked;
+      Settings.SyncPlaylists = false;
       Settings.ItunesLibraryPath = txtItunesLibrary.Text;
-      Settings.RemoveEmptyPlaylists = chkRemoveEmptyPlaylists.Checked;
+      Settings.RemoveEmptyPlaylists = false;
 
       Settings.ChosenPlaylists.Clear();
 
-      List<SelectedPlaylist> playlists = grdPlaylists.DataSource as List<SelectedPlaylist>;
+      List<SelectedPlaylist> playlists = new List<SelectedPlaylist>();
 
       foreach (var playlist in playlists)
       {
@@ -203,15 +195,6 @@ SELECT id, name FROM accounts WHERE id > 0;";
       var accounts = GetPlexAccounts().Select(a => a.id + " - " + a.name).ToList();
 
       cboPlexAccount.DataSource = accounts;
-    }
-
-    private void chkSyncPlaylists_CheckedChanged(object sender, EventArgs e)
-    {
-      lblItunesLibrary.Enabled = chkSyncPlaylists.Checked;
-      txtItunesLibrary.Enabled = chkSyncPlaylists.Checked;
-      cmdItunesLibrary.Enabled = chkSyncPlaylists.Checked;
-      grdPlaylists.Enabled = chkSyncPlaylists.Checked;
-      chkRemoveEmptyPlaylists.Enabled = chkSyncPlaylists.Checked;
     }
 
     private void cmdItunesLibrary_Click(object sender, EventArgs e)

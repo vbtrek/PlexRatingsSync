@@ -71,7 +71,7 @@ namespace DS.PlexRatingsSync
         {
           cmdOptions.Enabled = false;
 
-          using (Options2 frm = new Options2())
+          using (Options3 frm = new Options3())
           {
             frm.ShowDialog(this);
           }
@@ -183,7 +183,7 @@ namespace DS.PlexRatingsSync
       bwProcess.CancelAsync();
       _ResetEvent.WaitOne();
 
-      using (Options2 frm = new Options2())
+      using (Options3 frm = new Options3())
       {
         frm.ShowDialog(this);
       }
@@ -278,7 +278,7 @@ namespace DS.PlexRatingsSync
           RatingsManager.SyncRatings(args);
 
           // Now sync playlists
-          PlaylistManager.SyncPlaylists(args);
+          //PlaylistManager.SyncPlaylists(args);
         }
       }
       catch (Exception ex)
