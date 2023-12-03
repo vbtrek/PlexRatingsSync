@@ -268,11 +268,11 @@ namespace DS.PlexRatingsSync
     {
       try
       {
-        string sql = string.Empty;
+        //string sql = string.Empty;
 
         using (var args = new SyncArgs(bwProcess))
         {
-          if (!args.PlexDb.IsDbConnected) return;
+          //if (!args.PlexDb.IsDbConnected) return;
 
           // Sync ratings
           RatingsManager.SyncRatings(args);

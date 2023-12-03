@@ -39,9 +39,9 @@ namespace DS.PlexRatingsSync
 
     public BackgroundWorker Worker { get; set; }
 
-    public PlexDatabaseControlller PlexDb { get; set; }
+    //public PlexDatabaseControlller PlexDb { get; set; }
 
-    public ItunesManager ItunesData { get; set; }
+    //public ItunesManager ItunesData { get; set; }
 
     public PlexRatingsData CurrentFile
     {
@@ -63,6 +63,7 @@ namespace DS.PlexRatingsSync
     {
       Worker = worker;
 
+      /*
       PlexDb = new PlexDatabaseControlller(Settings.PlexDatabase);
 
       ItunesData = new ItunesManager(Settings.ItunesLibraryPath);
@@ -73,6 +74,7 @@ namespace DS.PlexRatingsSync
 
         ItunesData.ReadItunesData(true, true);
       }
+      */
     }
 
     #endregion
@@ -127,8 +129,8 @@ namespace DS.PlexRatingsSync
         case RatingConvert.File:
           return NormaliseFileRating(rating);
 
-        case RatingConvert.Itunes:
-          return NormaliseItunesRating(rating);
+//        case RatingConvert.Itunes:
+//          return NormaliseItunesRating(rating);
       }
 
       return null;
@@ -149,8 +151,8 @@ namespace DS.PlexRatingsSync
         case RatingConvert.File:
           return FileRatingFromNormalised(normalisedRating);
 
-        case RatingConvert.Itunes:
-          return ItunesRatingFromNormalised(normalisedRating);
+//        case RatingConvert.Itunes:
+//          return ItunesRatingFromNormalised(normalisedRating);
       }
 
       return null;
@@ -160,6 +162,7 @@ namespace DS.PlexRatingsSync
     {
       get
       {
+        // TODO_DS1
         string sql = "SELECT title FROM metadata_items WHERE guid = '{0}' AND metadata_type = 10";
 
         sql = string.Format(sql, CurrentFile.guid);
@@ -202,18 +205,18 @@ namespace DS.PlexRatingsSync
       return fileRating;
     }
 
-    private int? ReadItunesRating()
-    {
-      // TODO_DS1 Need to get current iTunes Rating somehow
-      // TODO_DS1 Test a UNC file
+    //private int? ReadItunesRating()
+    //{
+    //  // TODO_DS1 Need to get current iTunes Rating somehow
+    //  // TODO_DS1 Test a UNC file
 
-      var itunesEntry = ItunesData.ItunesTracks.FirstOrDefault(t => t.ProperLocation == CurrentFile.file);
+    //  var itunesEntry = ItunesData.ItunesTracks.FirstOrDefault(t => t.ProperLocation == CurrentFile.file);
 
-      if (itunesEntry != null)
-        return itunesEntry.Rating;
+    //  if (itunesEntry != null)
+    //    return itunesEntry.Rating;
 
-      return null;
-    }
+    //  return null;
+    //}
 
     private static int? NormaliseFileRating(int? fileRating)
     {
@@ -256,24 +259,24 @@ namespace DS.PlexRatingsSync
       }
     }
 
-    private static int? NormaliseItunesRating(int? itunesRating)
-    {
-      switch (itunesRating)
-      {
-        case int n when (n >=1 && n <= 20):
-          return 1;
-        case int n when (n >= 21 && n <= 40):
-          return 2;
-        case int n when (n >= 41 && n <= 60):
-          return 3;
-        case int n when (n >= 61 && n <= 80):
-          return 4;
-        case int n when (n >= 81 && n <= 100):
-          return 5;
-        default:
-          return null;
-      }
-    }
+    //private static int? NormaliseItunesRating(int? itunesRating)
+    //{
+    //  switch (itunesRating)
+    //  {
+    //    case int n when (n >=1 && n <= 20):
+    //      return 1;
+    //    case int n when (n >= 21 && n <= 40):
+    //      return 2;
+    //    case int n when (n >= 41 && n <= 60):
+    //      return 3;
+    //    case int n when (n >= 61 && n <= 80):
+    //      return 4;
+    //    case int n when (n >= 81 && n <= 100):
+    //      return 5;
+    //    default:
+    //      return null;
+    //  }
+    //}
 
     private static int? PlexRatingFromNormalised(int? normalisedRating)
     {
@@ -316,24 +319,24 @@ namespace DS.PlexRatingsSync
       }
     }
 
-    private static int? ItunesRatingFromNormalised(int? normalisedRating)
-    {
-      switch (normalisedRating)
-      {
-        case 1:
-          return 20;
-        case 2:
-          return 40;
-        case 3:
-          return 60;
-        case 4:
-          return 80;
-        case 5:
-          return 100;
-        default:
-          return null;
-      }
-    }
+    //private static int? ItunesRatingFromNormalised(int? normalisedRating)
+    //{
+    //  switch (normalisedRating)
+    //  {
+    //    case 1:
+    //      return 20;
+    //    case 2:
+    //      return 40;
+    //    case 3:
+    //      return 60;
+    //    case 4:
+    //      return 80;
+    //    case 5:
+    //      return 100;
+    //    default:
+    //      return null;
+    //  }
+    //}
 
     #endregion
 
@@ -346,7 +349,7 @@ namespace DS.PlexRatingsSync
         if (disposing)
         {
           // Dispose managed state (managed objects)
-          if (PlexDb != null) PlexDb.Dispose();
+          //if (PlexDb != null) PlexDb.Dispose();
         }
 
         // Free any unmanaged resources (unmanaged objects) and override finalizer

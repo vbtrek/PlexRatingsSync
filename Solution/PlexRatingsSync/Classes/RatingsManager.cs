@@ -1,5 +1,9 @@
 ﻿using DS.Library.MessageHandling;
+using DS.PlexRatingsSync.Classes;
+using DS.PlexRatingsSync.Classes.PlexApi;
+using DS.PlexRatingsSync.Classes.PlexTvApi;
 using Microsoft.WindowsAPICodePack.Shell;
+using Newtonsoft.Json;
 using Sentry;
 using System;
 using System.Collections.Generic;
@@ -8,6 +12,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
+using System.Windows.Forms;
+using System.Xml.Serialization;
 
 namespace DS.PlexRatingsSync
 {
@@ -22,6 +29,7 @@ namespace DS.PlexRatingsSync
       // Get all the files to sync ratings for
       args.ReportProgress("Reading Track Data From Plex...");
 
+      /*
       string sql = @"
 SELECT MTI.guid, MP.file, MTIS.rating
 FROM media_items MI
@@ -34,8 +42,41 @@ WHERE LS.section_type = 8";
       sql = string.Format(sql, Settings.PlexAccountId);
 
       List<PlexRatingsData> ratingdata = args.PlexDb.ReadPlexAndMap<PlexRatingsData>(sql);
+      */
 
-      args.ReportProgress(ratingdata.Count);
+      // Login and get auth token
+      string username = "dereksmith.home@outlook.com";
+      string password = "*CfN76G#PtAOq%";
+      //var plainTextBytes = System.Text.Encoding.ASCII.GetBytes($"{username}:{password}");
+      //var auth = Convert.ToBase64String(plainTextBytes);
+      var loginResult = RestClient.Create(new Uri("https://plex.tv/users/sign_in.json"), RestClient.httpMethod.Post, string.Empty)
+        .AddHeader("X-Plex-Client-Identifier", "Plexapi")
+        .AddHeader("X-Plex-Product", "PlexRatingsSync")
+        .AddHeader("X-Plex-Version", Application.ProductVersion)
+        .AddHeader("X-Plex-Device", Environment.MachineName)
+        .AddHeader("X-Plex-Platform", "Desktop")
+        .AcceptHeader(RestClient.httpContentType.Json)
+        .AuthorizationBasic(username, password)
+        .SendRequestWithExceptionResponse();
+
+      var myDeserializedClass = JsonConvert.DeserializeObject<PlexTvRoot>(loginResult);
+
+      // Do the rest call:
+      // X-Plex-Token=xcxGLUCG-MABLz-pxnkk
+      // http://10.1.14.114:32400/library/all?type=10
+      var result = RestClient.Create(new Uri("http://10.1.14.114:32400/library/all"), RestClient.httpMethod.Get, string.Empty)
+        .AddHeader("X-Plex-Token", "xcxGLUCG-MABLz-pxnkk")
+        .AddParameter("Type", "10") // 10=tracks
+        .SendRequestWithExceptionResponse();
+
+      MediaContainer mediaContainer = null;
+
+      XmlSerializer serializer = new XmlSerializer(typeof(MediaContainer));
+
+      using (StringReader reader = new StringReader(result))
+        mediaContainer = (MediaContainer)serializer.Deserialize(reader);
+
+      args.ReportProgress(mediaContainer.Size);
       
       args.ReportProgress("Syncing Ratings...");
 

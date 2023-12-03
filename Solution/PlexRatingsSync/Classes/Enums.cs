@@ -12,17 +12,21 @@ namespace DS.PlexRatingsSync
     [Description("File Properties")]
     FileProperties = 0,
 
-    [Description("iTunes Library")]
-    ITunesLibrary = 1
+//    [Description("iTunes Library")]
+//    ITunesLibrary = 1
   }
 
   public enum SyncModes
   {
+//    [Description("File or iTunes to Plex")]
+//    FileOrItunesToPlex = 1,
     [Description("File or iTunes to Plex")]
-    FileOrItunesToPlex = 1,
+    FileToPlex = 1,
 
+//    [Description("Plex to File or iTunes")]
+//    PlexToFileOrItunes = 2,
     [Description("Plex to File or iTunes")]
-    PlexToFileOrItunes = 2,
+    PlexToFile = 2,
 
     [Description("2-Way")]
     TwoWay = 3
@@ -36,8 +40,10 @@ namespace DS.PlexRatingsSync
     [Description("Plex Always Wins")]
     Plex = 1,
 
-    [Description("File or iTunes Always Wins")]
-    FileOrItunes = 2,
+//    [Description("File or iTunes Always Wins")]
+//    FileOrItunes = 2,
+    [Description("File Always Wins")]
+    File = 2,
 
     [Description("Prompt If Both Have Different Ratings")]
     Prompt = 3,
@@ -50,13 +56,14 @@ namespace DS.PlexRatingsSync
   {
     Cancel = 0,
     UpdatePlex = 1,
-    UpdateFileOrItunes = 2
+//    UpdateFileOrItunes = 2
+    UpdateFile = 2
   }
 
   public enum RatingConvert
   {
     Plex,
     File,
-    Itunes
+//    Itunes
   }
 }
