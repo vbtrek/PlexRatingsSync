@@ -60,7 +60,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\ExtensionsTests.cs" />
-    <Compile Include="Classes\ItunesManagerTests.cs" />
     <Compile Include="Classes\RatingsManagerTests.cs" />
     <Compile Include="Classes\SettingsTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

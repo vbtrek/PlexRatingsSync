@@ -8,12 +8,8 @@ namespace DS.PlexRatingsSync
 {
   public static class Settings
   {
-    public static string PlexDatabase { get; set; }
-    public static string PlexAccount { get; set; }
-    public static string ItunesLibraryPath { get; set; }
-    public static bool SyncPlaylists { get; set; }
-    public static bool RemoveEmptyPlaylists { get; set; }
-    public static List<string> ChosenPlaylists { get; set; }
+    public static string PlexUsername { get; set; }
+    public static string PlexPassword { get; set; }
 
     public static bool SyncRatings { get; set; }
     public static SyncSources SyncSource { get; set; }
@@ -24,27 +20,11 @@ namespace DS.PlexRatingsSync
     {
       Registry.CurrentUser.CreateSubKey(@"Software\Derek Smith\PlexRatingsSync");
 
-      PlexDatabase =
-          Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "PlexDatabase", "").ToString();
+      PlexUsername =
+          Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "PlexUsername", "").ToString();
 
-      PlexAccount =
-          Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "PlexAccount", "").ToString();
-
-      ItunesLibraryPath =
-          Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "ItunesLibraryPath", "").ToString();
-
-      SyncPlaylists =
-          bool.Parse(Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "SyncPlaylists", "false").ToString());
-
-      RemoveEmptyPlaylists =
-          bool.Parse(Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "RemoveEmptyPlaylists", "true").ToString());
-
-      SyncPlaylists = false;
-
-      ChosenPlaylists =
-          Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "Playlists", String.Empty)
-          .ToString().Split(',').ToList();
-
+      PlexPassword =
+          Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "PlexPassword", "").ToString();
 
       SyncRatings = bool.Parse(
           Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "SyncRatings", "false").ToString());
@@ -64,17 +44,8 @@ namespace DS.PlexRatingsSync
 
     public static void SavePreferences()
     {
-      SaveOption("PlexDatabase", PlexDatabase);
-      SaveOption("PlexAccount", PlexAccount);
-
-      SaveOption("ItunesLibraryPath", ItunesLibraryPath);
-
-      SaveOption("SyncPlaylists", SyncPlaylists);
-      SaveOption("RemoveEmptyPlaylists", RemoveEmptyPlaylists);
-
-      string playlistString = String.Join(",", ChosenPlaylists.ToArray<string>());
-
-      SaveOption("Playlists", playlistString);
+      SaveOption("PlexUsername", PlexUsername);
+      SaveOption("PlexPassword", PlexPassword);
 
       SaveOption("SyncSource", SyncSource);
       SaveOption("SyncRatings", SyncRatings);
@@ -86,22 +57,6 @@ namespace DS.PlexRatingsSync
     {
       if (optionValue != null)
         Registry.SetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", optionName, optionValue);
-    }
-
-    public static int PlexAccountId
-    {
-      get
-      {
-        if (PlexAccount == null) return 0;
-        if (PlexAccount.Contains(" - "))
-        {
-          int id;
-          int.TryParse(PlexAccount.Substring(0, PlexAccount.IndexOf(" - ")), out id);
-          return id;
-        }
-
-        return 0;
-      }
     }
   }
 }

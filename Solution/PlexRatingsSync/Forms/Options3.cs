@@ -10,8 +10,6 @@ namespace DS.PlexRatingsSync
 {
   public partial class Options3 : Form
   {
-    private ItunesManager _ItunesManager = new ItunesManager(Settings.ItunesLibraryPath);
-
     public Options3()
     {
       InitializeComponent();
@@ -19,8 +17,6 @@ namespace DS.PlexRatingsSync
 
     private void Options3_Load(object sender, EventArgs e)
     {
-      _ItunesManager.ReadItunesData(true, false);
-
       PopulateDropdowns();
 
       GetPreferences();
@@ -33,13 +29,9 @@ namespace DS.PlexRatingsSync
 
     private void GetPreferences()
     {
-      txtPlexDatabase.Text = Settings.PlexDatabase;
+      txtPlexUsername.Text = Settings.PlexUsername;
 
-      cboPlexAccount.Text = Settings.PlexAccount;
-
-      txtItunesLibrary.Text = Settings.ItunesLibraryPath;
-
-      AddPlaylists();
+      txtPlexPassword.Text = Settings.PlexPassword;
 
       chkSyncRatings.Checked = Settings.SyncRatings;
 
@@ -74,35 +66,11 @@ namespace DS.PlexRatingsSync
       }
     }
 
-    private void AddPlaylists()
-    {
-      var selectedPlaylists = (from playlist in _ItunesManager.ItunesPlaylists
-                              select new SelectedPlaylist() { Playlist = playlist.FullPlaylistName, Selected = false })
-                              .ToList();
-
-      foreach (var playlist in selectedPlaylists)
-      {
-        playlist.Selected = Settings.ChosenPlaylists.Contains(playlist.Playlist);
-      }
-    }
-
     private void SavePreferences()
     {
-      Settings.PlexDatabase = txtPlexDatabase.Text;
-      Settings.PlexAccount = cboPlexAccount.Text;
-      Settings.SyncPlaylists = false;
-      Settings.ItunesLibraryPath = txtItunesLibrary.Text;
-      Settings.RemoveEmptyPlaylists = false;
+      Settings.PlexUsername = txtPlexUsername.Text;
 
-      Settings.ChosenPlaylists.Clear();
-
-      List<SelectedPlaylist> playlists = new List<SelectedPlaylist>();
-
-      foreach (var playlist in playlists)
-      {
-        if (playlist.Selected)
-          Settings.ChosenPlaylists.Add(playlist.Playlist);
-      }
+      Settings.PlexPassword = txtPlexPassword.Text;
 
       Settings.SyncRatings = chkSyncRatings.Checked;
 
@@ -135,24 +103,8 @@ namespace DS.PlexRatingsSync
         if (cboSyncMode.SelectedItem is EnumHelper.EnumValue mode)
           return (SyncModes)mode.EnumItem;
 
-        return SyncModes.FileOrItunesToPlex;
+        return SyncModes.FileToPlex;
       }
-    }
-
-    private List<PlexTableAccounts> GetPlexAccounts()
-    {
-      PlexDatabaseControlller plex = new PlexDatabaseControlller(txtPlexDatabase.Text);
-
-      if (plex.IsDbConnected)
-      {
-        string sql = @"SELECT id, 'Master' AS name FROM accounts WHERE id = 0
-UNION ALL
-SELECT id, name FROM accounts WHERE id > 0;";
-
-        return plex.ReadPlexAndMap<PlexTableAccounts>(sql);
-      }
-
-      return new List<PlexTableAccounts>();
     }
 
     private void EnableDisableRatingsOptions(bool enable)
@@ -174,7 +126,7 @@ SELECT id, name FROM accounts WHERE id > 0;";
     {
       openFileDialog.Filter = "Plex Database Files|com.plexapp.plugins.library.db";
 
-      if (string.IsNullOrWhiteSpace(txtPlexDatabase.Text))
+      if (string.IsNullOrWhiteSpace(txtPlexUsername.Text))
       {
         var path = Environment.ExpandEnvironmentVariables(@"%LOCALAPPDATA%\Plex Media Server\Plug-in Support\Databases");
 
@@ -182,40 +134,12 @@ SELECT id, name FROM accounts WHERE id > 0;";
           openFileDialog.InitialDirectory = path;
       }
       else
-        openFileDialog.FileName = txtPlexDatabase.Text;
+        openFileDialog.FileName = txtPlexUsername.Text;
 
       if (openFileDialog.ShowDialog() == DialogResult.OK)
       {
-        txtPlexDatabase.Text = openFileDialog.FileName;
+        txtPlexUsername.Text = openFileDialog.FileName;
       }
-    }
-
-    private void txtPlexDatabase_TextChanged(object sender, EventArgs e)
-    {
-      var accounts = GetPlexAccounts().Select(a => a.id + " - " + a.name).ToList();
-
-      cboPlexAccount.DataSource = accounts;
-    }
-
-    private void cmdItunesLibrary_Click(object sender, EventArgs e)
-    {
-      openFileDialog.Filter = "iTunes Library Files|*.xml";
-
-      openFileDialog.FileName = txtItunesLibrary.Text;
-
-      if (openFileDialog.ShowDialog() == DialogResult.OK)
-      {
-        txtItunesLibrary.Text = openFileDialog.FileName;
-      }
-    }
-
-    private void txtItunesLibrary_TextChanged(object sender, EventArgs e)
-    {
-      _ItunesManager = new ItunesManager(txtItunesLibrary.Text);
-
-      _ItunesManager.ReadItunesData(true, false);
-
-      AddPlaylists();
     }
 
     private void CmdOk_Click(object sender, EventArgs e)
@@ -241,23 +165,11 @@ SELECT id, name FROM accounts WHERE id > 0;";
         switch (SelectedSource)
         {
           case SyncSources.FileProperties:
-            if (mode.EnumItem.Equals(SyncModes.FileOrItunesToPlex))
+            if (mode.EnumItem.Equals(SyncModes.FileToPlex))
               mode.Description = "File Properties to Plex";
 
-            if (mode.EnumItem.Equals(SyncModes.PlexToFileOrItunes))
+            if (mode.EnumItem.Equals(SyncModes.PlexToFile))
               mode.Description = "Plex to File Properties";
-
-            break;
-
-          case SyncSources.ITunesLibrary:
-            if (mode.EnumItem.Equals(SyncModes.FileOrItunesToPlex))
-              mode.Description = "iTunes Library to Plex";
-
-            if (mode.EnumItem.Equals(SyncModes.PlexToFileOrItunes))
-              modes.Remove(mode);
-
-            if (mode.EnumItem.Equals(SyncModes.TwoWay))
-              modes.Remove(mode);
 
             break;
         }
@@ -277,21 +189,15 @@ SELECT id, name FROM accounts WHERE id > 0;";
         switch (SelectedSource)
         {
           case SyncSources.FileProperties:
-            if (clashWinner.EnumItem.Equals(ClashWinner.FileOrItunes))
+            if (clashWinner.EnumItem.Equals(ClashWinner.File))
               clashWinner.Description = "File Properties Always Wins";
-
-            break;
-
-          case SyncSources.ITunesLibrary:
-            if (clashWinner.EnumItem.Equals(ClashWinner.FileOrItunes))
-              clashWinner.Description = "iTunes Library Always Wins";
 
             break;
         }
 
         switch (SelectedSyncMode)
         {
-          case SyncModes.FileOrItunesToPlex:
+          case SyncModes.FileToPlex:
             if (clashWinner.EnumItem.Equals(ClashWinner.Plex))
               clashWinners.Remove(clashWinner);
 
@@ -306,8 +212,8 @@ SELECT id, name FROM accounts WHERE id > 0;";
 
             break;
 
-          case SyncModes.PlexToFileOrItunes:
-            if (clashWinner.EnumItem.Equals(ClashWinner.FileOrItunes))
+          case SyncModes.PlexToFile:
+            if (clashWinner.EnumItem.Equals(ClashWinner.File))
               clashWinners.Remove(clashWinner);
 
             if (clashWinner.EnumItem.Equals(ClashWinner.Skip))

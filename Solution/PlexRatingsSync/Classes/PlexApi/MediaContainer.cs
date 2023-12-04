@@ -4,6 +4,9 @@ using System.Xml.Serialization;
 namespace DS.PlexRatingsSync.Classes.PlexApi
 {
   [XmlRoot(ElementName = "MediaContainer")]
+  [XmlInclude(typeof(Track))]
+  [XmlInclude(typeof(Media))]
+  [XmlInclude(typeof(Part))]
   public class MediaContainer
   {
     [XmlElement(ElementName = "Track")]

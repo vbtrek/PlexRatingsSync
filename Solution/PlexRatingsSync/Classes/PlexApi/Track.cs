@@ -61,13 +61,16 @@ namespace DS.PlexRatingsSync.Classes.PlexApi
     public string ParentTitle { get; set; }
 
     [XmlAttribute(AttributeName = "summary")]
-    public object Summary { get; set; }
+    public string Summary { get; set; }
 
     [XmlAttribute(AttributeName = "index")]
     public int Index { get; set; }
 
     [XmlAttribute(AttributeName = "parentIndex")]
     public int ParentIndex { get; set; }
+
+    [XmlAttribute(AttributeName = "userRating")]
+    public decimal UserRating { get; set; }
 
     [XmlAttribute(AttributeName = "ratingCount")]
     public int RatingCount { get; set; }
@@ -98,5 +101,18 @@ namespace DS.PlexRatingsSync.Classes.PlexApi
 
     [XmlAttribute(AttributeName = "originalTitle")]
     public string OriginalTitle { get; set; }
+
+    [XmlIgnore]
+    public string CleanKey
+    {
+      get
+      {
+        // Remove the key prefix: example key=/library/metadata/28999
+        if (Key.StartsWith("/library/metadata/)"))
+          return Key.Substring("/library/metadata/".Length);
+
+        return Key;
+      }
+    }
   }
 }

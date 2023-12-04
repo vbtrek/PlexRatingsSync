@@ -31,15 +31,9 @@ namespace DS.PlexRatingsSync
 
       string plexButtonText = "Plex " + plexRatingDisplay + " Stars\nClick here to overwrite the file rating with the Plex rating";
 
-      if (Settings.SyncSource == SyncSources.ITunesLibrary)
-        plexButtonText = "Plex " + plexRatingDisplay + " Stars\nClick here to overwrite the iTunes rating with the Plex rating";
-
       string fileRatingDisplay = fileRating == null ? "UnSet" : fileRating.ToString();
 
       string fileButtonText = "File " + fileRatingDisplay + " Stars\nClick here to overwrite the Plex rating with the file rating";
-
-      if (Settings.SyncSource == SyncSources.ITunesLibrary)
-        fileButtonText = "iTunes " + fileRatingDisplay + " Stars\nClick here to overwrite the Plex rating with the iTunes rating";
 
       TaskDialogCommandLink plexButton = new TaskDialogCommandLink("plexButton", plexButtonText);
       
@@ -62,7 +56,7 @@ namespace DS.PlexRatingsSync
 
     private void plexButton_Click(object sender, EventArgs e)
     {
-      _RatingsClashReturn = RatingsClashResult.UpdateFileOrItunes;
+      _RatingsClashReturn = RatingsClashResult.UpdateFile;
 
       if (_TaskDialog != null) _TaskDialog.Close();
     }

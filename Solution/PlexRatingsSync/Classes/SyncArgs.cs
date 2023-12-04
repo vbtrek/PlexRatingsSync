@@ -1,10 +1,13 @@
 ﻿using DS.Library.MessageHandling;
+using DS.PlexRatingsSync.Classes.PlexApi;
+using DS.PlexRatingsSync.Classes.PlexTvApi;
 using Microsoft.WindowsAPICodePack.Shell;
 using Sentry;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,7 +30,9 @@ namespace DS.PlexRatingsSync
 
     #region Private members
 
-    private PlexRatingsData _CurrentFile = null;
+    private Dictionary<string, string> _MusicFolderMappings;
+
+    private Track _CurrentTrack = null;
 
     private int? _CachedFileRating = null;
 
@@ -39,21 +44,51 @@ namespace DS.PlexRatingsSync
 
     public BackgroundWorker Worker { get; set; }
 
-    //public PlexDatabaseControlller PlexDb { get; set; }
+    public PlexTvRoot PlexUser { get; set; }
 
-    //public ItunesManager ItunesData { get; set; }
-
-    public PlexRatingsData CurrentFile
+    public Dictionary<string, string> MusicFolderMappings
     {
-      get => _CurrentFile;
-      set { _CachedFileRating = null; _CurrentFile = value; }
+      get => _MusicFolderMappings;
+      set { _MusicFolderMappings = value; }
     }
 
-    public int? CurrentPlexRating => (int?)CurrentFile.rating;
+    public Track CurrentTrack
+    {
+      get => _CurrentTrack;
+      set { _CachedFileRating = null; _CurrentTrack = value; }
+    }
 
-    public int? CurrentFileRating => ReadFileRating(CurrentFile?.file);
+    public FileInfo CurrentLocalFile
+    {
+      get
+      {
+        try
+        {
+          if (_MusicFolderMappings != null && _CurrentTrack != null)
+          {
+            if (_CurrentTrack.Media?.Part?.File == null)
+              return null;
 
-    public int? CurrentItunesRating => ReadItunesRating();
+            string file = _CurrentTrack.Media.Part.File;
+
+            foreach (var folder in _MusicFolderMappings)
+            {
+              if (file.StartsWith(folder.Key))
+                return new FileInfo($"{folder.Value}{file.Substring(folder.Key.Length)}");
+            }
+          }
+        }
+        catch
+        { }
+
+        return null;
+      }
+    }
+
+    public int? CurrentPlexRating => (int?)_CurrentTrack.UserRating;
+
+    // TODO_DS1 Need to resolve the file location correctly
+    public int? CurrentFileRating => ReadFileRating();
 
     #endregion
 
@@ -62,19 +97,6 @@ namespace DS.PlexRatingsSync
     public SyncArgs(BackgroundWorker worker)
     {
       Worker = worker;
-
-      /*
-      PlexDb = new PlexDatabaseControlller(Settings.PlexDatabase);
-
-      ItunesData = new ItunesManager(Settings.ItunesLibraryPath);
-
-      if (Settings.SyncPlaylists || (Settings.SyncRatings && Settings.SyncSource == SyncSources.ITunesLibrary))
-      {
-        ReportProgress("Reading Playlists from iTunes...");
-
-        ItunesData.ReadItunesData(true, true);
-      }
-      */
     }
 
     #endregion
@@ -128,9 +150,6 @@ namespace DS.PlexRatingsSync
 
         case RatingConvert.File:
           return NormaliseFileRating(rating);
-
-//        case RatingConvert.Itunes:
-//          return NormaliseItunesRating(rating);
       }
 
       return null;
@@ -150,32 +169,18 @@ namespace DS.PlexRatingsSync
 
         case RatingConvert.File:
           return FileRatingFromNormalised(normalisedRating);
-
-//        case RatingConvert.Itunes:
-//          return ItunesRatingFromNormalised(normalisedRating);
       }
 
       return null;
     }
 
-    public string PlexTitle
-    {
-      get
-      {
-        // TODO_DS1
-        string sql = "SELECT title FROM metadata_items WHERE guid = '{0}' AND metadata_type = 10";
-
-        sql = string.Format(sql, CurrentFile.guid);
-
-        return (string)PlexDb.ReadPlexValue(sql);
-      }
-    }
+    public string PlexTitle => _CurrentTrack?.Title ?? string.Empty;
 
     #endregion
 
     #region Private methods
 
-    private int? ReadFileRating(string file)
+    private int? ReadFileRating()
     {
       int? fileRating = null;
 
@@ -183,7 +188,7 @@ namespace DS.PlexRatingsSync
       {
         try
         {
-          ShellFile so = ShellFile.FromFilePath(file);
+          ShellFile so = ShellFile.FromFilePath(CurrentLocalFile.FullName);
 
           if (so.Properties.System.Rating.Value != null)
             fileRating = Convert.ToInt32(so.Properties.System.Rating.Value);
@@ -204,19 +209,6 @@ namespace DS.PlexRatingsSync
 
       return fileRating;
     }
-
-    //private int? ReadItunesRating()
-    //{
-    //  // TODO_DS1 Need to get current iTunes Rating somehow
-    //  // TODO_DS1 Test a UNC file
-
-    //  var itunesEntry = ItunesData.ItunesTracks.FirstOrDefault(t => t.ProperLocation == CurrentFile.file);
-
-    //  if (itunesEntry != null)
-    //    return itunesEntry.Rating;
-
-    //  return null;
-    //}
 
     private static int? NormaliseFileRating(int? fileRating)
     {
@@ -259,25 +251,6 @@ namespace DS.PlexRatingsSync
       }
     }
 
-    //private static int? NormaliseItunesRating(int? itunesRating)
-    //{
-    //  switch (itunesRating)
-    //  {
-    //    case int n when (n >=1 && n <= 20):
-    //      return 1;
-    //    case int n when (n >= 21 && n <= 40):
-    //      return 2;
-    //    case int n when (n >= 41 && n <= 60):
-    //      return 3;
-    //    case int n when (n >= 61 && n <= 80):
-    //      return 4;
-    //    case int n when (n >= 81 && n <= 100):
-    //      return 5;
-    //    default:
-    //      return null;
-    //  }
-    //}
-
     private static int? PlexRatingFromNormalised(int? normalisedRating)
     {
       switch (normalisedRating)
@@ -318,25 +291,6 @@ namespace DS.PlexRatingsSync
           return null;
       }
     }
-
-    //private static int? ItunesRatingFromNormalised(int? normalisedRating)
-    //{
-    //  switch (normalisedRating)
-    //  {
-    //    case 1:
-    //      return 20;
-    //    case 2:
-    //      return 40;
-    //    case 3:
-    //      return 60;
-    //    case 4:
-    //      return 80;
-    //    case 5:
-    //      return 100;
-    //    default:
-    //      return null;
-    //  }
-    //}
 
     #endregion
 

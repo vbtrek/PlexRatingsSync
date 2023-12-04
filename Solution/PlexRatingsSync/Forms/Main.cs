@@ -194,42 +194,26 @@ namespace DS.PlexRatingsSync
 
     private bool IsSettingValid(bool showMessage)
     {
-      if (string.IsNullOrWhiteSpace(Settings.PlexDatabase))
+      if (string.IsNullOrWhiteSpace(Settings.PlexUsername))
       {
         if (showMessage)
-          MessageBox.Show("You must select a Plex Database.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Error);
+          MessageBox.Show("You must enter a Plex Username.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
         return false;
       }
 
-      if (!File.Exists(Settings.PlexDatabase))
+      if (string.IsNullOrWhiteSpace(Settings.PlexPassword))
       {
         if (showMessage)
-          MessageBox.Show("Plex Database cannot be found in the location specified.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Error);
+          MessageBox.Show("You must enter a Plex Password.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
         return false;
       }
 
-      if (!Settings.SyncRatings && !Settings.SyncPlaylists)
+      if (!Settings.SyncRatings)
       {
         if (showMessage)
           MessageBox.Show("You must select at least one thing to sync.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-        return false;
-      }
-
-      if (Settings.SyncPlaylists && string.IsNullOrWhiteSpace(Settings.ItunesLibraryPath))
-      {
-        if (showMessage)
-          MessageBox.Show("You have selected to sync playlists but not selected an iTunes library file.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-        return false;
-      }
-
-      if (Settings.SyncPlaylists && !File.Exists(Settings.ItunesLibraryPath))
-      {
-        if (showMessage)
-          MessageBox.Show("You have selected to sync playlists but the iTunes library file cannot be found in the location specified.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
         return false;
       }
@@ -239,21 +223,13 @@ namespace DS.PlexRatingsSync
 
     private void StartProcessing()
     {
-      UpdateLabel(lblStatus, "Connecting to database...");
+      UpdateLabel(lblStatus, "Connecting...");
 
       UpdateLabel(lblTotals, $"Updated: 0 | New: 0");
 
-      if (string.IsNullOrWhiteSpace(Settings.PlexDatabase))
-      {
-        string dbPath = Environment.ExpandEnvironmentVariables(@"%LOCALAPPDATA%\Plex Media Server\Plug-in Support\Databases\com.plexapp.plugins.library.db");
+      //UpdateLabel(lblPlex, $"Plex:   {Settings.PlexDatabase.EllipsisString(60)}");
 
-        if (File.Exists(Settings.PlexDatabase))
-          Settings.PlexDatabase = dbPath;
-      }
-
-      UpdateLabel(lblPlex, $"Plex:   {Settings.PlexDatabase.EllipsisString(60)}");
-
-      UpdateLabel(lblItunes, $"iTunes: {Settings.ItunesLibraryPath.EllipsisString(60)}");
+      //UpdateLabel(lblItunes, $"iTunes: {Settings.ItunesLibraryPath.EllipsisString(60)}");
 
       progressBar1.Value = 0;
 
@@ -268,17 +244,10 @@ namespace DS.PlexRatingsSync
     {
       try
       {
-        //string sql = string.Empty;
-
         using (var args = new SyncArgs(bwProcess))
         {
-          //if (!args.PlexDb.IsDbConnected) return;
-
           // Sync ratings
           RatingsManager.SyncRatings(args);
-
-          // Now sync playlists
-          //PlaylistManager.SyncPlaylists(args);
         }
       }
       catch (Exception ex)
