@@ -39,7 +39,7 @@
       this.lblStatus.AutoSize = true;
       this.lblStatus.Location = new System.Drawing.Point(9, 59);
       this.lblStatus.Name = "lblStatus";
-      this.lblStatus.Size = new System.Drawing.Size(48, 13);
+      this.lblStatus.Size = new System.Drawing.Size(59, 17);
       this.lblStatus.TabIndex = 1;
       this.lblStatus.Text = "lblStatus";
       // 
@@ -56,7 +56,7 @@
       this.lblTotals.AutoSize = true;
       this.lblTotals.Location = new System.Drawing.Point(9, 103);
       this.lblTotals.Name = "lblTotals";
-      this.lblTotals.Size = new System.Drawing.Size(46, 13);
+      this.lblTotals.Size = new System.Drawing.Size(56, 17);
       this.lblTotals.TabIndex = 2;
       this.lblTotals.Text = "lblTotals";
       // 
@@ -66,7 +66,7 @@
       this.lblPlex.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.lblPlex.Location = new System.Drawing.Point(9, 9);
       this.lblPlex.Name = "lblPlex";
-      this.lblPlex.Size = new System.Drawing.Size(49, 13);
+      this.lblPlex.Size = new System.Drawing.Size(64, 17);
       this.lblPlex.TabIndex = 3;
       this.lblPlex.Text = "lblPlex";
       // 
@@ -76,7 +76,7 @@
       this.lblItunes.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.lblItunes.Location = new System.Drawing.Point(9, 26);
       this.lblItunes.Name = "lblItunes";
-      this.lblItunes.Size = new System.Drawing.Size(61, 13);
+      this.lblItunes.Size = new System.Drawing.Size(80, 17);
       this.lblItunes.TabIndex = 4;
       this.lblItunes.Text = "lblItunes";
       // 
@@ -92,7 +92,7 @@
       // 
       // Main
       // 
-      this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+      this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 17F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.ClientSize = new System.Drawing.Size(489, 124);
       this.Controls.Add(this.cmdOptions);
@@ -106,7 +106,7 @@
       this.MaximizeBox = false;
       this.Name = "Main";
       this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-      this.Text = "Plex Ratings/Playlists Sync";
+      this.Text = "Plex Ratings Sync";
       this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Main_FormClosing);
       this.Load += new System.EventHandler(this.Main_Load);
       this.Shown += new System.EventHandler(this.Main_Shown);

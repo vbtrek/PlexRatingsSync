@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace DS.PlexRatingsSync.Classes.PlexApi
@@ -6,9 +7,6 @@ namespace DS.PlexRatingsSync.Classes.PlexApi
   [XmlRoot(ElementName = "Track")]
   public class Track
   {
-    [XmlElement(ElementName = "Media")]
-    public Media Media { get; set; }
-
     [XmlAttribute(AttributeName = "ratingKey")]
     public int RatingKey { get; set; }
 
@@ -102,16 +100,84 @@ namespace DS.PlexRatingsSync.Classes.PlexApi
     [XmlAttribute(AttributeName = "originalTitle")]
     public string OriginalTitle { get; set; }
 
+    [XmlElement(ElementName = "Media")]
+    public Media Media { get; set; }
+
     [XmlIgnore]
     public string CleanKey
     {
       get
       {
         // Remove the key prefix: example key=/library/metadata/28999
-        if (Key.StartsWith("/library/metadata/)"))
+        if (Key.StartsWith("/library/metadata/"))
           return Key.Substring("/library/metadata/".Length);
 
         return Key;
+      }
+    }
+
+    public void ReadFromXmlFragment(XmlReader reader)
+    {
+      reader.MoveToContent();
+
+      // Read node attributes
+      RatingKey = reader.GetAttributeValue<int>("ratingKey");
+      Key = reader.GetAttributeValue<string>("key");
+      ParentRatingKey = reader.GetAttributeValue<int>("parentRatingKey");
+      GrandparentRatingKey = reader.GetAttributeValue<int>("grandparentRatingKey");
+      Guid = reader.GetAttributeValue<string>("guid");
+      ParentGuid = reader.GetAttributeValue<string>("parentGuid");
+      GrandparentGuid = reader.GetAttributeValue<string>("grandparentGuid");
+      ParentStudio = reader.GetAttributeValue<string>("parentStudio");
+      Type = reader.GetAttributeValue<string>("type");
+      Title = reader.GetAttributeValue<string>("title");
+      GrandparentKey = reader.GetAttributeValue<string>("grandparentKey");
+      ParentKey = reader.GetAttributeValue<string>("parentKey");
+      LibrarySectionTitle = reader.GetAttributeValue<string>("librarySectionTitle");
+      LibrarySectionID = reader.GetAttributeValue<int>("librarySectionID");
+      LibrarySectionKey = reader.GetAttributeValue<string>("librarySectionKey");
+      GrandparentTitle = reader.GetAttributeValue<string>("grandparentTitle");
+      ParentTitle = reader.GetAttributeValue<string>("parentTitle");
+      Summary = reader.GetAttributeValue<string>("summary");
+      Index = reader.GetAttributeValue<int>("index");
+      ParentIndex = reader.GetAttributeValue<int>("parentIndex");
+      UserRating = reader.GetAttributeValue<decimal>("userRating");
+      RatingCount = reader.GetAttributeValue<int>("ratingCount");
+      ParentYear = reader.GetAttributeValue<int>("parentYear");
+      Thumb = reader.GetAttributeValue<string>("thumb");
+      ParentThumb = reader.GetAttributeValue<string>("parentThumb");
+      GrandparentThumb = reader.GetAttributeValue<string>("grandparentThumb");
+      Duration = reader.GetAttributeValue<int>("duration");
+      AddedAt = reader.GetAttributeValue<int>("addedAt");
+      UpdatedAt = reader.GetAttributeValue<int>("updatedAt");
+      MusicAnalysisVersion = reader.GetAttributeValue<int>("musicAnalysisVersion");
+      OriginalTitle = reader.GetAttributeValue<string>("originalTitle");
+
+      if (reader.IsEmpty()) return;
+
+      reader.Read();
+
+      while (!reader.EOF)
+      {
+        if (reader.IsStartElement())
+        {
+          switch (reader.Name)
+          {
+            case "Media":
+              Media = new Media();
+              Media.ReadFromXmlFragment(reader);
+              break;
+
+            default:
+              reader.Skip();
+              break;
+          }
+        }
+        else
+        {
+          reader.Read();
+          break;
+        }
       }
     }
   }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace DS.PlexRatingsSync.Classes.PlexApi
@@ -25,6 +26,35 @@ namespace DS.PlexRatingsSync.Classes.PlexApi
     public string Container { get; set; }
 
     [XmlAttribute(AttributeName = "hasThumbnail")]
-    public int HasThumbnail { get; set; }
+    public bool HasThumbnail { get; set; }
+
+    public void ReadFromXmlFragment(XmlReader reader)
+    {
+      reader.MoveToContent();
+
+      // Read node attributes
+      Id = reader.GetAttributeValue<int>("id");
+      Key = reader.GetAttributeValue<string>("key");
+      Duration = reader.GetAttributeValue<int>("duration");
+      File = reader.GetAttributeValue<string>("file");
+      Size = reader.GetAttributeValue<int>("size");
+      Container = reader.GetAttributeValue<string>("container");
+      HasThumbnail = reader.GetAttributeValue<bool>("hasThumbnail");
+
+      if (reader.IsEmpty()) return;
+
+      reader.Read();
+
+      while (!reader.EOF)
+      {
+        if (reader.IsStartElement())
+        { }
+        else
+        {
+          reader.Read();
+          break;
+        }
+      }
+    }
   }
 }

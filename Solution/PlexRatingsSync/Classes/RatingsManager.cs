@@ -14,6 +14,8 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Windows.Forms;
+using System.Xml.Linq;
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace DS.PlexRatingsSync
@@ -62,19 +64,25 @@ namespace DS.PlexRatingsSync
       // Get all tracks
       // X-Plex-Token=xcxGLUCG-MABLz-pxnkk
       // http://10.1.14.114:32400/library/all?type=10
-      var result = RestClient.Create(new Uri("http://10.1.14.114:32400/library/all"), RestClient.httpMethod.Get, string.Empty)
+      var result = RestClient.Create(
+        new Uri("http://10.1.14.114:32400/library/all"), RestClient.httpMethod.Get, string.Empty)
         .AddHeader("X-Plex-Token", plexUser.user.authToken)
-        .AddParameter("Type", "10") // 10=tracks
+        .AddParameter("type", "10") // 10=tracks
         .SendRequestWithExceptionResponse();
 
-      MediaContainer mediaContainer = null;
+      MediaContainer mediaContainer = new MediaContainer();
 
       try
       {
+        using (XmlReader reader = XmlReader.Create(new StringReader(result)))
+          mediaContainer.ReadFromXml(reader);
+
+        /*
         XmlSerializer serializer = new XmlSerializer(typeof(MediaContainer));
 
         using (StringReader reader = new StringReader(result))
           mediaContainer = (MediaContainer)serializer.Deserialize(reader);
+        */
       }
       catch
       { }
@@ -88,7 +96,7 @@ namespace DS.PlexRatingsSync
       args.MusicFolderMappings = localMusicRoots;
 
       // Process all the files
-      foreach (var track in mediaContainer.Track)
+      foreach (var track in mediaContainer.Tracks)
       {
         if (args.Worker.CancellationPending) return;
 
