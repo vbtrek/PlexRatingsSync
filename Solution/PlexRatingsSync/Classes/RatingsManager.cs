@@ -197,7 +197,15 @@ namespace DS.PlexRatingsSync
 
               string fileLabel = $"<a href=\"{artistUri}\">{args.CurrentTrack.GrandparentTitle}</a>{Environment.NewLine}";
               fileLabel += $"<a href=\"{albumUri}\">{args.CurrentTrack.ParentTitle}</a>{Environment.NewLine}";
-              fileLabel += $"{args.CurrentTrack.Title}";
+              if (args.CurrentTrack.Index == 0)
+                fileLabel += $"{args.CurrentTrack.Title}";
+              else
+              {
+                if (args.CurrentTrack.ParentIndex == 0)
+                  fileLabel += $"Track: {args.CurrentTrack.Index} - {args.CurrentTrack.Title}";
+                else
+                  fileLabel += $"Disc {args.CurrentTrack.ParentIndex} | Track {args.CurrentTrack.Index} - {args.CurrentTrack.Title}";
+              }
 
               result = dlg.RatingsClash($"{fileLabel}", normalisedPlexRating, currentNormalisedSourceRating);
             }
@@ -261,9 +269,9 @@ namespace DS.PlexRatingsSync
 
 #if DEBUG
       Debug.Print(message);
-#else
-      so.Properties.System.Rating.Value = newFileRating;
 #endif
+
+      so.Properties.System.Rating.Value = newFileRating;
 
       MessageManager.Instance.MessageWrite(new object(), MessageItem.MessageLevel.Information, message);
     }
