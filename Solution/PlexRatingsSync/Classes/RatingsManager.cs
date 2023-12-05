@@ -84,6 +84,8 @@ namespace DS.PlexRatingsSync
 
       args.MusicFolderMappings = localMusicRoots;
 
+      int trackCount = 1;
+
       // Process all the files
       foreach (var track in mediaContainer.Tracks)
       {
@@ -91,11 +93,15 @@ namespace DS.PlexRatingsSync
 
         args.CurrentTrack = track;
 
+        args.ReportProgress(SyncArgs.ProgressType.UpdateSubLabel, $"{trackCount:#,###,##0} / {mediaContainer.Size:#,###,##0} Tracks");
+
         args.ReportProgress($"Syncing \"{track.GrandparentTitle} - {track.ParentTitle} - {track.Title}\"...");
 
         SyncRating(args);
 
         args.ReportProgress(SyncArgs.ProgressType.IncrementProgressBar);
+
+        trackCount++;
       }
     }
 
@@ -272,6 +278,8 @@ namespace DS.PlexRatingsSync
 #endif
 
       so.Properties.System.Rating.Value = newFileRating;
+
+      args.ReportProgress(SyncArgs.ProgressType.IncrementUpdatedCount);
 
       MessageManager.Instance.MessageWrite(new object(), MessageItem.MessageLevel.Information, message);
     }
