@@ -10,6 +10,7 @@ namespace DS.PlexRatingsSync
   {
     public static string PlexUsername { get; set; }
     public static string PlexPassword { get; set; }
+    public static string PlexUri { get; set; }
 
     public static bool SyncRatings { get; set; }
     public static SyncSources SyncSource { get; set; }
@@ -20,35 +21,38 @@ namespace DS.PlexRatingsSync
     {
       Registry.CurrentUser.CreateSubKey(@"Software\Derek Smith\PlexRatingsSync");
 
-      PlexUsername =
-          Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "PlexUsername", "").ToString();
+      PlexUsername = GetOption("PlexUsername", string.Empty);
+      PlexPassword = GetOption("PlexPassword", string.Empty);
+      PlexUri = GetOption("PlexUri", string.Empty);
 
-      PlexPassword =
-          Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "PlexPassword", "").ToString();
+      SyncRatings = bool.Parse(GetOption("SyncRatings", "false"));
+      SyncSource = (SyncSources)Enum.Parse(typeof(SyncSources), GetOption("SyncSource", "0"));
+      SyncHandling = (SyncModes)Enum.Parse(typeof(SyncModes), GetOption("SyncHandling", "3"));
+      ClashHandling = (ClashWinner)Enum.Parse(typeof(ClashWinner), GetOption("ClashHandling", "0"));
+    }
 
-      SyncRatings = bool.Parse(
-          Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "SyncRatings", "false").ToString());
+    private static string GetOption(string optionName, string defaultValue)
+    {
+      if (string.IsNullOrWhiteSpace(optionName))
+        return string.Empty;
 
-      var value = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "SyncSource", "0").ToString();
+      if (defaultValue == null)
+        defaultValue = string.Empty;
 
-      SyncSource = (SyncSources)Enum.Parse(typeof(SyncSources), value);
-
-      value = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "SyncHandling", "3").ToString();
-
-      SyncHandling = (SyncModes)Enum.Parse(typeof(SyncModes), value);
-
-      value = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", "ClashHandling", "0").ToString();
-
-      ClashHandling = (ClashWinner)Enum.Parse(typeof(ClashWinner), value);
+      return Registry.GetValue(@"HKEY_CURRENT_USER\Software\Derek Smith\PlexRatingsSync", optionName, defaultValue).ToString();
     }
 
     public static void SavePreferences()
     {
+      if (!PlexUri.EndsWith("/"))
+        PlexUri += "/";
+
       SaveOption("PlexUsername", PlexUsername);
       SaveOption("PlexPassword", PlexPassword);
+      SaveOption("PlexUri", PlexUri);
 
-      SaveOption("SyncSource", SyncSource);
       SaveOption("SyncRatings", SyncRatings);
+      SaveOption("SyncSource", SyncSource);
       SaveOption("SyncHandling", SyncHandling);
       SaveOption("ClashHandling", ClashHandling);
     }

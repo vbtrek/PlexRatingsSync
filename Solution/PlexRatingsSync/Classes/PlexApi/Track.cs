@@ -116,6 +116,32 @@ namespace DS.PlexRatingsSync.Classes.PlexApi
       }
     }
 
+    [XmlIgnore]
+    public string CleanParentKey
+    {
+      get
+      {
+        // Remove the key prefix: example key=/library/metadata/28999
+        if (ParentKey.StartsWith("/library/metadata/"))
+          return ParentKey.Substring("/library/metadata/".Length);
+
+        return ParentKey;
+      }
+    }
+
+    [XmlIgnore]
+    public string CleanGrandparentKey
+    {
+      get
+      {
+        // Remove the key prefix: example key=/library/metadata/28999
+        if (GrandparentKey.StartsWith("/library/metadata/"))
+          return GrandparentKey.Substring("/library/metadata/".Length);
+
+        return GrandparentKey;
+      }
+    }
+
     public void ReadFromXmlFragment(XmlReader reader)
     {
       reader.MoveToContent();

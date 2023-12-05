@@ -7,16 +7,10 @@ using Newtonsoft.Json;
 using Sentry;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
 using System.Windows.Forms;
-using System.Xml.Linq;
 using System.Xml;
-using System.Xml.Serialization;
 
 namespace DS.PlexRatingsSync
 {
@@ -65,7 +59,7 @@ namespace DS.PlexRatingsSync
       // X-Plex-Token=xcxGLUCG-MABLz-pxnkk
       // http://10.1.14.114:32400/library/all?type=10
       var result = RestClient.Create(
-        new Uri("http://10.1.14.114:32400/library/all"), RestClient.httpMethod.Get, string.Empty)
+        new Uri($"{Settings.PlexUri}library/all"), RestClient.httpMethod.Get, string.Empty)
         .AddHeader("X-Plex-Token", plexUser.user.authToken)
         .AddParameter("type", "10") // 10=tracks
         .SendRequestWithExceptionResponse();
@@ -76,19 +70,14 @@ namespace DS.PlexRatingsSync
       {
         using (XmlReader reader = XmlReader.Create(new StringReader(result)))
           mediaContainer.ReadFromXml(reader);
-
-        /*
-        XmlSerializer serializer = new XmlSerializer(typeof(MediaContainer));
-
-        using (StringReader reader = new StringReader(result))
-          mediaContainer = (MediaContainer)serializer.Deserialize(reader);
-        */
       }
       catch
       { }
 
       args.ReportProgress(mediaContainer.Size);
-      
+
+      args.ReportProgress(SyncArgs.ProgressType.UpdateSubLabel, $"{mediaContainer.Size:#,###,##0} Tracks");
+
       args.ReportProgress("Syncing Ratings...");
 
       args.PlexUser = plexUser;
@@ -197,10 +186,20 @@ namespace DS.PlexRatingsSync
             if (result == RatingsClashResult.Cancel && Settings.ClashHandling != ClashWinner.Skip)
             {
               FileInfo fi = args.CurrentLocalFile;
-
               TaskDialogs dlg = new TaskDialogs();
-              
-              result = dlg.RatingsClash($"{args.PlexTitle}{Environment.NewLine}{fi.Name}", normalisedPlexRating, currentNormalisedSourceRating);
+
+              // TODO_DS1 Need to call an api to get this
+              // https://www.plexopedia.com/plex-media-server/api/server/identity/
+              string server = "edffd15c22217aafa277ecc18b741967c2a4874c";
+
+              string artistUri = $"{Settings.PlexUri}web/index.html#!/server/{server}/details?key=%2Flibrary%2Fmetadata%2F{args.CurrentTrack.CleanGrandparentKey}";
+              string albumUri = $"{Settings.PlexUri}web/index.html#!/server/{server}/details?key=%2Flibrary%2Fmetadata%2F{args.CurrentTrack.CleanParentKey}";
+
+              string fileLabel = $"<a href=\"{artistUri}\">{args.CurrentTrack.GrandparentTitle}</a>{Environment.NewLine}";
+              fileLabel += $"<a href=\"{albumUri}\">{args.CurrentTrack.ParentTitle}</a>{Environment.NewLine}";
+              fileLabel += $"{args.CurrentTrack.Title}";
+
+              result = dlg.RatingsClash($"{fileLabel}", normalisedPlexRating, currentNormalisedSourceRating);
             }
           }
 
@@ -220,6 +219,8 @@ namespace DS.PlexRatingsSync
     {
       int? currentRatingInPlexFormat = CurrentRatingInPlexFormat(args);
 
+      if (currentRatingInPlexFormat == null) currentRatingInPlexFormat = -1;
+
       int? plexDbRating = args.CurrentPlexRating;
 
       string message = string.Format("Updating Plex rating for file \"{0}\" from {1} to {2}",
@@ -233,7 +234,7 @@ namespace DS.PlexRatingsSync
       args.ReportProgress(SyncArgs.ProgressType.IncrementUpdatedCount);
 
       // Update a rating entry using the rest API
-      var result = RestClient.Create(new Uri("http://10.1.14.114:32400/:/rate"), RestClient.httpMethod.Put, string.Empty)
+      var result = RestClient.Create(new Uri($"{Settings.PlexUri}:/rate"), RestClient.httpMethod.Put, string.Empty)
         .AddHeader("X-Plex-Token", args.PlexUser.user.authToken)
         .AddParameter("key", args.CurrentTrack.CleanKey)
         .AddParameter("identifier", "com.plexapp.plugins.library")

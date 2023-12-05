@@ -170,6 +170,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\PlexTvApi\PlexTvUser.cs" />
+    <None Include="plex-icon.png" />
     <Content Include="Referenced Assemblies\DS.Controls.PropertyGridEx.dll" />
     <Content Include="Referenced Assemblies\DS.Library.MessageHandling.dll" />
   </ItemGroup>

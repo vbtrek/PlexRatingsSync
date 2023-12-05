@@ -23,7 +23,8 @@ namespace DS.PlexRatingsSync
       IncrementProgressBar,
       IncrementUpdatedCount,
       IncrementNewCount,
-      ResetCounters
+      ResetCounters,
+      UpdateSubLabel
     }
 
     #endregion
@@ -105,6 +106,11 @@ namespace DS.PlexRatingsSync
 
     public void ReportProgress(ProgressType type)
     {
+      ReportProgress(type, string.Empty);
+    }
+
+    public void ReportProgress(ProgressType type, string info)
+    {
       if (Worker == null) return;
 
       switch (type)
@@ -119,7 +125,10 @@ namespace DS.PlexRatingsSync
           Worker.ReportProgress(-3);
           break;
         case ProgressType.ResetCounters:
-          Worker.ReportProgress(4);
+          Worker.ReportProgress(-4);
+          break;
+        case ProgressType.UpdateSubLabel:
+          Worker.ReportProgress(-5, info);
           break;
       }
     }

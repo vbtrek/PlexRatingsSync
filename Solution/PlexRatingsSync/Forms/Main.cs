@@ -51,7 +51,7 @@ namespace DS.PlexRatingsSync
         lblStatus.Text = string.Empty;
         lblTotals.Text = string.Empty;
         lblPlex.Text = string.Empty;
-        lblItunes.Text = string.Empty;
+        lblSubMessage.Text = string.Empty;
 
         Settings.GetPreferences();
       }
@@ -116,7 +116,7 @@ namespace DS.PlexRatingsSync
 
     private void bwProcess_ProgressChanged(object sender, ProgressChangedEventArgs e)
     {
-      // Progress messagees
+      // Progress messages
       if (e.ProgressPercentage == 0)
       {
         UpdateLabel(lblStatus, e.UserState as string);
@@ -139,7 +139,7 @@ namespace DS.PlexRatingsSync
       {
         _UpdateCount++;
 
-        UpdateLabel(lblTotals, $"Updated: {_UpdateCount} | New: {_AddCount}");
+        UpdateLabel(lblTotals, $"Updated: {_UpdateCount}");
 
         return;
       }
@@ -149,7 +149,7 @@ namespace DS.PlexRatingsSync
       {
         _AddCount++;
 
-        UpdateLabel(lblTotals, $"Updated: {_UpdateCount} | New: {_AddCount}");
+        UpdateLabel(lblTotals, $"Updated: {_UpdateCount}");
         
         return;
       }
@@ -163,7 +163,15 @@ namespace DS.PlexRatingsSync
 
         progressBar1.Value = progressBar1.Minimum;
 
-        UpdateLabel(lblTotals, $"Updated: {_UpdateCount} | New: {_AddCount}");
+        UpdateLabel(lblTotals, $"Updated: {_UpdateCount}");
+
+        return;
+      }
+
+      // Update sub label
+      if (e.ProgressPercentage == -5)
+      {
+        UpdateLabel(lblSubMessage, e.UserState as string);
 
         return;
       }
@@ -210,6 +218,14 @@ namespace DS.PlexRatingsSync
         return false;
       }
 
+      if (string.IsNullOrWhiteSpace(Settings.PlexUri))
+      {
+        if (showMessage)
+          MessageBox.Show("You must enter a Plex Uri.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+        return false;
+      }
+
       if (!Settings.SyncRatings)
       {
         if (showMessage)
@@ -225,11 +241,9 @@ namespace DS.PlexRatingsSync
     {
       UpdateLabel(lblStatus, "Connecting...");
 
-      UpdateLabel(lblTotals, $"Updated: 0 | New: 0");
+      UpdateLabel(lblTotals, $"Updated: 0");
 
-      //UpdateLabel(lblPlex, $"Plex:   {Settings.PlexDatabase.EllipsisString(60)}");
-
-      //UpdateLabel(lblItunes, $"iTunes: {Settings.ItunesLibraryPath.EllipsisString(60)}");
+      UpdateLabel(lblPlex, $"Plex:   {Settings.PlexUri.EllipsisString(60)}");
 
       progressBar1.Value = 0;
 

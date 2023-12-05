@@ -33,6 +33,8 @@ namespace DS.PlexRatingsSync
 
       txtPlexPassword.Text = Settings.PlexPassword;
 
+      txtPlexUri.Text = Settings.PlexUri;
+
       chkSyncRatings.Checked = Settings.SyncRatings;
 
       foreach (EnumHelper.EnumValue item in cboSyncSource.Items)
@@ -71,6 +73,8 @@ namespace DS.PlexRatingsSync
       Settings.PlexUsername = txtPlexUsername.Text;
 
       Settings.PlexPassword = txtPlexPassword.Text;
+
+      Settings.PlexUri = txtPlexUri.Text;
 
       Settings.SyncRatings = chkSyncRatings.Checked;
 

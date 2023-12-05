@@ -28,6 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+      System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Options3));
       this.txtPlexUsername = new System.Windows.Forms.TextBox();
       this.lblPlexUsername = new System.Windows.Forms.Label();
       this.lblPlexPassword = new System.Windows.Forms.Label();
@@ -45,6 +46,8 @@
       this.etchedLine3 = new DS.Controls.EtchedLine();
       this.etchedLine1 = new DS.Controls.EtchedLine();
       this.txtPlexPassword = new System.Windows.Forms.TextBox();
+      this.txtPlexUri = new System.Windows.Forms.TextBox();
+      this.lblPlexUri = new System.Windows.Forms.Label();
       this.SuspendLayout();
       // 
       // txtPlexUsername
@@ -82,10 +85,10 @@
       // 
       this.chkSyncRatings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
       this.chkSyncRatings.AutoSize = true;
-      this.chkSyncRatings.Location = new System.Drawing.Point(15, 126);
+      this.chkSyncRatings.Location = new System.Drawing.Point(15, 154);
       this.chkSyncRatings.Name = "chkSyncRatings";
       this.chkSyncRatings.Size = new System.Drawing.Size(124, 17);
-      this.chkSyncRatings.TabIndex = 6;
+      this.chkSyncRatings.TabIndex = 8;
       this.chkSyncRatings.Text = "Sync Ratings to Plex";
       this.chkSyncRatings.UseVisualStyleBackColor = true;
       this.chkSyncRatings.CheckedChanged += new System.EventHandler(this.chkSyncRatings_CheckedChanged);
@@ -94,20 +97,20 @@
       // 
       this.cmdCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
       this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-      this.cmdCancel.Location = new System.Drawing.Point(503, 233);
+      this.cmdCancel.Location = new System.Drawing.Point(503, 261);
       this.cmdCancel.Name = "cmdCancel";
       this.cmdCancel.Size = new System.Drawing.Size(75, 23);
-      this.cmdCancel.TabIndex = 15;
+      this.cmdCancel.TabIndex = 17;
       this.cmdCancel.Text = "Cancel";
       this.cmdCancel.UseVisualStyleBackColor = true;
       // 
       // cmdOk
       // 
       this.cmdOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-      this.cmdOk.Location = new System.Drawing.Point(422, 233);
+      this.cmdOk.Location = new System.Drawing.Point(422, 261);
       this.cmdOk.Name = "cmdOk";
       this.cmdOk.Size = new System.Drawing.Size(75, 23);
-      this.cmdOk.TabIndex = 14;
+      this.cmdOk.TabIndex = 16;
       this.cmdOk.Text = "OK";
       this.cmdOk.UseVisualStyleBackColor = true;
       this.cmdOk.Click += new System.EventHandler(this.CmdOk_Click);
@@ -119,10 +122,10 @@
       this.cboSyncSource.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this.cboSyncSource.Enabled = false;
       this.cboSyncSource.FormattingEnabled = true;
-      this.cboSyncSource.Location = new System.Drawing.Point(323, 124);
+      this.cboSyncSource.Location = new System.Drawing.Point(323, 152);
       this.cboSyncSource.Name = "cboSyncSource";
       this.cboSyncSource.Size = new System.Drawing.Size(255, 21);
-      this.cboSyncSource.TabIndex = 8;
+      this.cboSyncSource.TabIndex = 10;
       this.cboSyncSource.SelectedIndexChanged += new System.EventHandler(this.cboSyncSource_SelectedIndexChanged);
       // 
       // cboSyncMode
@@ -132,10 +135,10 @@
       this.cboSyncMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this.cboSyncMode.Enabled = false;
       this.cboSyncMode.FormattingEnabled = true;
-      this.cboSyncMode.Location = new System.Drawing.Point(323, 151);
+      this.cboSyncMode.Location = new System.Drawing.Point(323, 179);
       this.cboSyncMode.Name = "cboSyncMode";
       this.cboSyncMode.Size = new System.Drawing.Size(255, 21);
-      this.cboSyncMode.TabIndex = 10;
+      this.cboSyncMode.TabIndex = 12;
       this.cboSyncMode.SelectedIndexChanged += new System.EventHandler(this.cboSyncMode_SelectedIndexChanged);
       // 
       // lblSyncSource
@@ -143,10 +146,10 @@
       this.lblSyncSource.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
       this.lblSyncSource.AutoSize = true;
       this.lblSyncSource.Enabled = false;
-      this.lblSyncSource.Location = new System.Drawing.Point(246, 127);
+      this.lblSyncSource.Location = new System.Drawing.Point(246, 155);
       this.lblSyncSource.Name = "lblSyncSource";
       this.lblSyncSource.Size = new System.Drawing.Size(69, 13);
-      this.lblSyncSource.TabIndex = 7;
+      this.lblSyncSource.TabIndex = 9;
       this.lblSyncSource.Text = "Sync source:";
       // 
       // lblSyncMode
@@ -154,10 +157,10 @@
       this.lblSyncMode.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
       this.lblSyncMode.AutoSize = true;
       this.lblSyncMode.Enabled = false;
-      this.lblSyncMode.Location = new System.Drawing.Point(246, 154);
+      this.lblSyncMode.Location = new System.Drawing.Point(246, 182);
       this.lblSyncMode.Name = "lblSyncMode";
       this.lblSyncMode.Size = new System.Drawing.Size(63, 13);
-      this.lblSyncMode.TabIndex = 9;
+      this.lblSyncMode.TabIndex = 11;
       this.lblSyncMode.Text = "Sync mode:";
       // 
       // lblClashWinner
@@ -165,10 +168,10 @@
       this.lblClashWinner.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
       this.lblClashWinner.AutoSize = true;
       this.lblClashWinner.Enabled = false;
-      this.lblClashWinner.Location = new System.Drawing.Point(246, 181);
+      this.lblClashWinner.Location = new System.Drawing.Point(246, 209);
       this.lblClashWinner.Name = "lblClashWinner";
       this.lblClashWinner.Size = new System.Drawing.Size(72, 13);
-      this.lblClashWinner.TabIndex = 11;
+      this.lblClashWinner.TabIndex = 13;
       this.lblClashWinner.Text = "Clash winner:";
       // 
       // cboClashWinner
@@ -178,20 +181,20 @@
       this.cboClashWinner.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this.cboClashWinner.Enabled = false;
       this.cboClashWinner.FormattingEnabled = true;
-      this.cboClashWinner.Location = new System.Drawing.Point(324, 178);
+      this.cboClashWinner.Location = new System.Drawing.Point(324, 206);
       this.cboClashWinner.Name = "cboClashWinner";
       this.cboClashWinner.Size = new System.Drawing.Size(255, 21);
-      this.cboClashWinner.TabIndex = 12;
+      this.cboClashWinner.TabIndex = 14;
       // 
       // etchedLine4
       // 
       this.etchedLine4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
       this.etchedLine4.Edge = DS.Controls.EtchEdge.Center;
-      this.etchedLine4.Location = new System.Drawing.Point(-3, 207);
+      this.etchedLine4.Location = new System.Drawing.Point(-3, 235);
       this.etchedLine4.Name = "etchedLine4";
       this.etchedLine4.Size = new System.Drawing.Size(596, 21);
-      this.etchedLine4.TabIndex = 13;
+      this.etchedLine4.TabIndex = 15;
       this.etchedLine4.TextLabel = "";
       // 
       // etchedLine3
@@ -199,10 +202,10 @@
       this.etchedLine3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
       this.etchedLine3.Edge = DS.Controls.EtchEdge.Center;
-      this.etchedLine3.Location = new System.Drawing.Point(12, 99);
+      this.etchedLine3.Location = new System.Drawing.Point(12, 127);
       this.etchedLine3.Name = "etchedLine3";
       this.etchedLine3.Size = new System.Drawing.Size(564, 21);
-      this.etchedLine3.TabIndex = 5;
+      this.etchedLine3.TabIndex = 7;
       this.etchedLine3.TextLabel = "Ratings ";
       // 
       // etchedLine1
@@ -226,13 +229,33 @@
       this.txtPlexPassword.Size = new System.Drawing.Size(479, 21);
       this.txtPlexPassword.TabIndex = 4;
       // 
+      // txtPlexUri
+      // 
+      this.txtPlexUri.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.txtPlexUri.Location = new System.Drawing.Point(97, 92);
+      this.txtPlexUri.Name = "txtPlexUri";
+      this.txtPlexUri.Size = new System.Drawing.Size(479, 21);
+      this.txtPlexUri.TabIndex = 6;
+      // 
+      // lblPlexUri
+      // 
+      this.lblPlexUri.AutoSize = true;
+      this.lblPlexUri.Location = new System.Drawing.Point(12, 95);
+      this.lblPlexUri.Name = "lblPlexUri";
+      this.lblPlexUri.Size = new System.Drawing.Size(84, 13);
+      this.lblPlexUri.TabIndex = 5;
+      this.lblPlexUri.Text = "Private Plex Uri:";
+      // 
       // Options3
       // 
       this.AcceptButton = this.cmdOk;
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.CancelButton = this.cmdCancel;
-      this.ClientSize = new System.Drawing.Size(590, 268);
+      this.ClientSize = new System.Drawing.Size(590, 296);
+      this.Controls.Add(this.txtPlexUri);
+      this.Controls.Add(this.lblPlexUri);
       this.Controls.Add(this.txtPlexPassword);
       this.Controls.Add(this.lblClashWinner);
       this.Controls.Add(this.cboClashWinner);
@@ -251,6 +274,7 @@
       this.Controls.Add(this.txtPlexUsername);
       this.Font = new System.Drawing.Font("Tahoma", 8.25F);
       this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+      this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
       this.MaximizeBox = false;
       this.MinimizeBox = false;
       this.Name = "Options3";
@@ -280,5 +304,7 @@
     private System.Windows.Forms.Label lblClashWinner;
     private System.Windows.Forms.ComboBox cboClashWinner;
     private System.Windows.Forms.TextBox txtPlexPassword;
+    private System.Windows.Forms.TextBox txtPlexUri;
+    private System.Windows.Forms.Label lblPlexUri;
   }
 }

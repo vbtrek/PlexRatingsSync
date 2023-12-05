@@ -1,6 +1,7 @@
 ﻿using Microsoft.WindowsAPICodePack.Dialogs;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -24,7 +25,8 @@ namespace DS.PlexRatingsSync
 
         Caption = "Mismatched Ratings",
         InstructionText = "There is a mismatch between the ratings for this file:",
-        Text = file + "\n\nChoose which rating you would like to keep:"
+        Text = $"{file}\n\nChoose which rating you would like to keep:",
+        HyperlinksEnabled = true
       };
 
       string plexRatingDisplay = plexRating == null ? "UnSet" : plexRating.ToString();
@@ -43,6 +45,8 @@ namespace DS.PlexRatingsSync
       
       fileButton.Click += new EventHandler(fileButton_Click);
 
+      _TaskDialog.HyperlinkClick += taskDialog_HyperlinkClick;
+
       _TaskDialog.Controls.Add(plexButton);
 
       _TaskDialog.Controls.Add(fileButton);
@@ -52,6 +56,11 @@ namespace DS.PlexRatingsSync
       _TaskDialog = null;
 
       return _RatingsClashReturn;
+    }
+
+    private void taskDialog_HyperlinkClick(object sender, TaskDialogHyperlinkClickedEventArgs e)
+    {
+      Process.Start(e.LinkText);
     }
 
     private void plexButton_Click(object sender, EventArgs e)

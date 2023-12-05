@@ -15,12 +15,13 @@
         /// </summary>
         private void InitializeComponent()
         {
+      System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
       this.progressBar1 = new System.Windows.Forms.ProgressBar();
       this.lblStatus = new System.Windows.Forms.Label();
       this.bwProcess = new System.ComponentModel.BackgroundWorker();
       this.lblTotals = new System.Windows.Forms.Label();
       this.lblPlex = new System.Windows.Forms.Label();
-      this.lblItunes = new System.Windows.Forms.Label();
+      this.lblSubMessage = new System.Windows.Forms.Label();
       this.cmdOptions = new System.Windows.Forms.Button();
       this.SuspendLayout();
       // 
@@ -39,7 +40,7 @@
       this.lblStatus.AutoSize = true;
       this.lblStatus.Location = new System.Drawing.Point(9, 59);
       this.lblStatus.Name = "lblStatus";
-      this.lblStatus.Size = new System.Drawing.Size(59, 17);
+      this.lblStatus.Size = new System.Drawing.Size(48, 13);
       this.lblStatus.TabIndex = 1;
       this.lblStatus.Text = "lblStatus";
       // 
@@ -56,7 +57,7 @@
       this.lblTotals.AutoSize = true;
       this.lblTotals.Location = new System.Drawing.Point(9, 103);
       this.lblTotals.Name = "lblTotals";
-      this.lblTotals.Size = new System.Drawing.Size(56, 17);
+      this.lblTotals.Size = new System.Drawing.Size(46, 13);
       this.lblTotals.TabIndex = 2;
       this.lblTotals.Text = "lblTotals";
       // 
@@ -66,19 +67,19 @@
       this.lblPlex.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.lblPlex.Location = new System.Drawing.Point(9, 9);
       this.lblPlex.Name = "lblPlex";
-      this.lblPlex.Size = new System.Drawing.Size(64, 17);
+      this.lblPlex.Size = new System.Drawing.Size(49, 13);
       this.lblPlex.TabIndex = 3;
       this.lblPlex.Text = "lblPlex";
       // 
-      // lblItunes
+      // lblSubMessage
       // 
-      this.lblItunes.AutoSize = true;
-      this.lblItunes.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.lblItunes.Location = new System.Drawing.Point(9, 26);
-      this.lblItunes.Name = "lblItunes";
-      this.lblItunes.Size = new System.Drawing.Size(80, 17);
-      this.lblItunes.TabIndex = 4;
-      this.lblItunes.Text = "lblItunes";
+      this.lblSubMessage.AutoSize = true;
+      this.lblSubMessage.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.lblSubMessage.Location = new System.Drawing.Point(9, 26);
+      this.lblSubMessage.Name = "lblSubMessage";
+      this.lblSubMessage.Size = new System.Drawing.Size(85, 13);
+      this.lblSubMessage.TabIndex = 4;
+      this.lblSubMessage.Text = "lblSubMessage";
       // 
       // cmdOptions
       // 
@@ -92,17 +93,18 @@
       // 
       // Main
       // 
-      this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 17F);
+      this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.ClientSize = new System.Drawing.Size(489, 124);
       this.Controls.Add(this.cmdOptions);
-      this.Controls.Add(this.lblItunes);
+      this.Controls.Add(this.lblSubMessage);
       this.Controls.Add(this.lblPlex);
       this.Controls.Add(this.lblTotals);
       this.Controls.Add(this.lblStatus);
       this.Controls.Add(this.progressBar1);
       this.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+      this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
       this.MaximizeBox = false;
       this.Name = "Main";
       this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -122,7 +124,7 @@
         private System.ComponentModel.BackgroundWorker bwProcess;
         private System.Windows.Forms.Label lblTotals;
         private System.Windows.Forms.Label lblPlex;
-        private System.Windows.Forms.Label lblItunes;
+        private System.Windows.Forms.Label lblSubMessage;
         private System.Windows.Forms.Button cmdOptions;
     }
 }
