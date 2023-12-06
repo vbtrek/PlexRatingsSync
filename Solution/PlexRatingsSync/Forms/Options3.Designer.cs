@@ -42,12 +42,35 @@
       this.lblSyncMode = new System.Windows.Forms.Label();
       this.lblClashWinner = new System.Windows.Forms.Label();
       this.cboClashWinner = new System.Windows.Forms.ComboBox();
-      this.etchedLine4 = new DS.Controls.EtchedLine();
-      this.etchedLine3 = new DS.Controls.EtchedLine();
-      this.etchedLine1 = new DS.Controls.EtchedLine();
       this.txtPlexPassword = new System.Windows.Forms.TextBox();
       this.txtPlexUri = new System.Windows.Forms.TextBox();
       this.lblPlexUri = new System.Windows.Forms.Label();
+      this.chkSendEmail = new System.Windows.Forms.CheckBox();
+      this.lblSendToName = new System.Windows.Forms.Label();
+      this.txtSendToName = new System.Windows.Forms.TextBox();
+      this.lblSendToEmail = new System.Windows.Forms.Label();
+      this.txtSendToEmail = new System.Windows.Forms.TextBox();
+      this.lblFromEmail = new System.Windows.Forms.Label();
+      this.txtFromEmail = new System.Windows.Forms.TextBox();
+      this.lblFromName = new System.Windows.Forms.Label();
+      this.txtFromName = new System.Windows.Forms.TextBox();
+      this.lblSmtpServer = new System.Windows.Forms.Label();
+      this.txtSmtpServer = new System.Windows.Forms.TextBox();
+      this.lblSmtpPort = new System.Windows.Forms.Label();
+      this.txtSmtpPort = new System.Windows.Forms.TextBox();
+      this.chkUseSsl = new System.Windows.Forms.CheckBox();
+      this.lblSecurity = new System.Windows.Forms.Label();
+      this.cboSecurity = new System.Windows.Forms.ComboBox();
+      this.lblSmtpUsername = new System.Windows.Forms.Label();
+      this.txtSmtpUsername = new System.Windows.Forms.TextBox();
+      this.lblSmtpPassword = new System.Windows.Forms.Label();
+      this.txtSmtpPassword = new System.Windows.Forms.TextBox();
+      this.grdMappings = new System.Windows.Forms.DataGridView();
+      this.etchedLine2 = new DS.Controls.EtchedLine();
+      this.etchedLine4 = new DS.Controls.EtchedLine();
+      this.etchedLine3 = new DS.Controls.EtchedLine();
+      this.etchedLine1 = new DS.Controls.EtchedLine();
+      ((System.ComponentModel.ISupportInitialize)(this.grdMappings)).BeginInit();
       this.SuspendLayout();
       // 
       // txtPlexUsername
@@ -83,9 +106,8 @@
       // 
       // chkSyncRatings
       // 
-      this.chkSyncRatings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
       this.chkSyncRatings.AutoSize = true;
-      this.chkSyncRatings.Location = new System.Drawing.Point(15, 154);
+      this.chkSyncRatings.Location = new System.Drawing.Point(15, 210);
       this.chkSyncRatings.Name = "chkSyncRatings";
       this.chkSyncRatings.Size = new System.Drawing.Size(124, 17);
       this.chkSyncRatings.TabIndex = 8;
@@ -97,7 +119,7 @@
       // 
       this.cmdCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
       this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-      this.cmdCancel.Location = new System.Drawing.Point(503, 261);
+      this.cmdCancel.Location = new System.Drawing.Point(503, 589);
       this.cmdCancel.Name = "cmdCancel";
       this.cmdCancel.Size = new System.Drawing.Size(75, 23);
       this.cmdCancel.TabIndex = 17;
@@ -107,7 +129,7 @@
       // cmdOk
       // 
       this.cmdOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-      this.cmdOk.Location = new System.Drawing.Point(422, 261);
+      this.cmdOk.Location = new System.Drawing.Point(422, 589);
       this.cmdOk.Name = "cmdOk";
       this.cmdOk.Size = new System.Drawing.Size(75, 23);
       this.cmdOk.TabIndex = 16;
@@ -117,36 +139,35 @@
       // 
       // cboSyncSource
       // 
-      this.cboSyncSource.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+      this.cboSyncSource.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
       this.cboSyncSource.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this.cboSyncSource.Enabled = false;
       this.cboSyncSource.FormattingEnabled = true;
-      this.cboSyncSource.Location = new System.Drawing.Point(323, 152);
+      this.cboSyncSource.Location = new System.Drawing.Point(294, 208);
       this.cboSyncSource.Name = "cboSyncSource";
-      this.cboSyncSource.Size = new System.Drawing.Size(255, 21);
+      this.cboSyncSource.Size = new System.Drawing.Size(282, 21);
       this.cboSyncSource.TabIndex = 10;
       this.cboSyncSource.SelectedIndexChanged += new System.EventHandler(this.cboSyncSource_SelectedIndexChanged);
       // 
       // cboSyncMode
       // 
-      this.cboSyncMode.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+      this.cboSyncMode.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
       this.cboSyncMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this.cboSyncMode.Enabled = false;
       this.cboSyncMode.FormattingEnabled = true;
-      this.cboSyncMode.Location = new System.Drawing.Point(323, 179);
+      this.cboSyncMode.Location = new System.Drawing.Point(294, 235);
       this.cboSyncMode.Name = "cboSyncMode";
-      this.cboSyncMode.Size = new System.Drawing.Size(255, 21);
+      this.cboSyncMode.Size = new System.Drawing.Size(282, 21);
       this.cboSyncMode.TabIndex = 12;
       this.cboSyncMode.SelectedIndexChanged += new System.EventHandler(this.cboSyncMode_SelectedIndexChanged);
       // 
       // lblSyncSource
       // 
-      this.lblSyncSource.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
       this.lblSyncSource.AutoSize = true;
       this.lblSyncSource.Enabled = false;
-      this.lblSyncSource.Location = new System.Drawing.Point(246, 155);
+      this.lblSyncSource.Location = new System.Drawing.Point(217, 211);
       this.lblSyncSource.Name = "lblSyncSource";
       this.lblSyncSource.Size = new System.Drawing.Size(69, 13);
       this.lblSyncSource.TabIndex = 9;
@@ -154,10 +175,9 @@
       // 
       // lblSyncMode
       // 
-      this.lblSyncMode.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
       this.lblSyncMode.AutoSize = true;
       this.lblSyncMode.Enabled = false;
-      this.lblSyncMode.Location = new System.Drawing.Point(246, 182);
+      this.lblSyncMode.Location = new System.Drawing.Point(217, 238);
       this.lblSyncMode.Name = "lblSyncMode";
       this.lblSyncMode.Size = new System.Drawing.Size(63, 13);
       this.lblSyncMode.TabIndex = 11;
@@ -165,10 +185,9 @@
       // 
       // lblClashWinner
       // 
-      this.lblClashWinner.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
       this.lblClashWinner.AutoSize = true;
       this.lblClashWinner.Enabled = false;
-      this.lblClashWinner.Location = new System.Drawing.Point(246, 209);
+      this.lblClashWinner.Location = new System.Drawing.Point(217, 265);
       this.lblClashWinner.Name = "lblClashWinner";
       this.lblClashWinner.Size = new System.Drawing.Size(72, 13);
       this.lblClashWinner.TabIndex = 13;
@@ -176,48 +195,15 @@
       // 
       // cboClashWinner
       // 
-      this.cboClashWinner.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+      this.cboClashWinner.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
       this.cboClashWinner.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this.cboClashWinner.Enabled = false;
       this.cboClashWinner.FormattingEnabled = true;
-      this.cboClashWinner.Location = new System.Drawing.Point(324, 206);
+      this.cboClashWinner.Location = new System.Drawing.Point(295, 262);
       this.cboClashWinner.Name = "cboClashWinner";
-      this.cboClashWinner.Size = new System.Drawing.Size(255, 21);
+      this.cboClashWinner.Size = new System.Drawing.Size(281, 21);
       this.cboClashWinner.TabIndex = 14;
-      // 
-      // etchedLine4
-      // 
-      this.etchedLine4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-      this.etchedLine4.Edge = DS.Controls.EtchEdge.Center;
-      this.etchedLine4.Location = new System.Drawing.Point(-3, 235);
-      this.etchedLine4.Name = "etchedLine4";
-      this.etchedLine4.Size = new System.Drawing.Size(596, 21);
-      this.etchedLine4.TabIndex = 15;
-      this.etchedLine4.TextLabel = "";
-      // 
-      // etchedLine3
-      // 
-      this.etchedLine3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-      this.etchedLine3.Edge = DS.Controls.EtchEdge.Center;
-      this.etchedLine3.Location = new System.Drawing.Point(12, 127);
-      this.etchedLine3.Name = "etchedLine3";
-      this.etchedLine3.Size = new System.Drawing.Size(564, 21);
-      this.etchedLine3.TabIndex = 7;
-      this.etchedLine3.TextLabel = "Ratings ";
-      // 
-      // etchedLine1
-      // 
-      this.etchedLine1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-      this.etchedLine1.Edge = DS.Controls.EtchEdge.Center;
-      this.etchedLine1.Location = new System.Drawing.Point(12, 12);
-      this.etchedLine1.Name = "etchedLine1";
-      this.etchedLine1.Size = new System.Drawing.Size(564, 21);
-      this.etchedLine1.TabIndex = 0;
-      this.etchedLine1.TextLabel = "Plex ";
       // 
       // txtPlexPassword
       // 
@@ -247,13 +233,274 @@
       this.lblPlexUri.TabIndex = 5;
       this.lblPlexUri.Text = "Private Plex Uri:";
       // 
+      // chkSendEmail
+      // 
+      this.chkSendEmail.AutoSize = true;
+      this.chkSendEmail.Location = new System.Drawing.Point(15, 326);
+      this.chkSendEmail.Name = "chkSendEmail";
+      this.chkSendEmail.Size = new System.Drawing.Size(196, 17);
+      this.chkSendEmail.TabIndex = 19;
+      this.chkSendEmail.Text = "Send Email Summary Of Unmatched";
+      this.chkSendEmail.UseVisualStyleBackColor = true;
+      this.chkSendEmail.CheckedChanged += new System.EventHandler(this.chkSendEmail_CheckedChanged);
+      // 
+      // lblSendToName
+      // 
+      this.lblSendToName.AutoSize = true;
+      this.lblSendToName.Location = new System.Drawing.Point(12, 353);
+      this.lblSendToName.Name = "lblSendToName";
+      this.lblSendToName.Size = new System.Drawing.Size(80, 13);
+      this.lblSendToName.TabIndex = 20;
+      this.lblSendToName.Text = "Send To Name:";
+      // 
+      // txtSendToName
+      // 
+      this.txtSendToName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.txtSendToName.Location = new System.Drawing.Point(97, 349);
+      this.txtSendToName.Name = "txtSendToName";
+      this.txtSendToName.Size = new System.Drawing.Size(192, 21);
+      this.txtSendToName.TabIndex = 21;
+      // 
+      // lblSendToEmail
+      // 
+      this.lblSendToEmail.AutoSize = true;
+      this.lblSendToEmail.Location = new System.Drawing.Point(12, 380);
+      this.lblSendToEmail.Name = "lblSendToEmail";
+      this.lblSendToEmail.Size = new System.Drawing.Size(77, 13);
+      this.lblSendToEmail.TabIndex = 22;
+      this.lblSendToEmail.Text = "Send To Email:";
+      // 
+      // txtSendToEmail
+      // 
+      this.txtSendToEmail.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.txtSendToEmail.Location = new System.Drawing.Point(97, 376);
+      this.txtSendToEmail.Name = "txtSendToEmail";
+      this.txtSendToEmail.Size = new System.Drawing.Size(192, 21);
+      this.txtSendToEmail.TabIndex = 23;
+      // 
+      // lblFromEmail
+      // 
+      this.lblFromEmail.AutoSize = true;
+      this.lblFromEmail.Location = new System.Drawing.Point(298, 380);
+      this.lblFromEmail.Name = "lblFromEmail";
+      this.lblFromEmail.Size = new System.Drawing.Size(62, 13);
+      this.lblFromEmail.TabIndex = 26;
+      this.lblFromEmail.Text = "From Email:";
+      // 
+      // txtFromEmail
+      // 
+      this.txtFromEmail.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.txtFromEmail.Location = new System.Drawing.Point(383, 376);
+      this.txtFromEmail.Name = "txtFromEmail";
+      this.txtFromEmail.Size = new System.Drawing.Size(193, 21);
+      this.txtFromEmail.TabIndex = 27;
+      // 
+      // lblFromName
+      // 
+      this.lblFromName.AutoSize = true;
+      this.lblFromName.Location = new System.Drawing.Point(298, 353);
+      this.lblFromName.Name = "lblFromName";
+      this.lblFromName.Size = new System.Drawing.Size(65, 13);
+      this.lblFromName.TabIndex = 24;
+      this.lblFromName.Text = "From Name:";
+      // 
+      // txtFromName
+      // 
+      this.txtFromName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.txtFromName.Location = new System.Drawing.Point(383, 349);
+      this.txtFromName.Name = "txtFromName";
+      this.txtFromName.Size = new System.Drawing.Size(193, 21);
+      this.txtFromName.TabIndex = 25;
+      // 
+      // lblSmtpServer
+      // 
+      this.lblSmtpServer.AutoSize = true;
+      this.lblSmtpServer.Location = new System.Drawing.Point(298, 406);
+      this.lblSmtpServer.Name = "lblSmtpServer";
+      this.lblSmtpServer.Size = new System.Drawing.Size(72, 13);
+      this.lblSmtpServer.TabIndex = 28;
+      this.lblSmtpServer.Text = "SMTP Server:";
+      // 
+      // txtSmtpServer
+      // 
+      this.txtSmtpServer.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.txtSmtpServer.Location = new System.Drawing.Point(384, 403);
+      this.txtSmtpServer.Name = "txtSmtpServer";
+      this.txtSmtpServer.Size = new System.Drawing.Size(192, 21);
+      this.txtSmtpServer.TabIndex = 29;
+      // 
+      // lblSmtpPort
+      // 
+      this.lblSmtpPort.AutoSize = true;
+      this.lblSmtpPort.Location = new System.Drawing.Point(298, 433);
+      this.lblSmtpPort.Name = "lblSmtpPort";
+      this.lblSmtpPort.Size = new System.Drawing.Size(60, 13);
+      this.lblSmtpPort.TabIndex = 30;
+      this.lblSmtpPort.Text = "SMTP Port:";
+      // 
+      // txtSmtpPort
+      // 
+      this.txtSmtpPort.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.txtSmtpPort.Location = new System.Drawing.Point(384, 430);
+      this.txtSmtpPort.Name = "txtSmtpPort";
+      this.txtSmtpPort.Size = new System.Drawing.Size(192, 21);
+      this.txtSmtpPort.TabIndex = 31;
+      // 
+      // chkUseSsl
+      // 
+      this.chkUseSsl.AutoSize = true;
+      this.chkUseSsl.Location = new System.Drawing.Point(383, 457);
+      this.chkUseSsl.Name = "chkUseSsl";
+      this.chkUseSsl.Size = new System.Drawing.Size(64, 17);
+      this.chkUseSsl.TabIndex = 32;
+      this.chkUseSsl.Text = "Use SSL";
+      this.chkUseSsl.UseVisualStyleBackColor = true;
+      // 
+      // lblSecurity
+      // 
+      this.lblSecurity.AutoSize = true;
+      this.lblSecurity.Enabled = false;
+      this.lblSecurity.Location = new System.Drawing.Point(298, 483);
+      this.lblSecurity.Name = "lblSecurity";
+      this.lblSecurity.Size = new System.Drawing.Size(50, 13);
+      this.lblSecurity.TabIndex = 33;
+      this.lblSecurity.Text = "Security:";
+      // 
+      // cboSecurity
+      // 
+      this.cboSecurity.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.cboSecurity.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+      this.cboSecurity.FormattingEnabled = true;
+      this.cboSecurity.Location = new System.Drawing.Point(383, 480);
+      this.cboSecurity.Name = "cboSecurity";
+      this.cboSecurity.Size = new System.Drawing.Size(193, 21);
+      this.cboSecurity.TabIndex = 34;
+      // 
+      // lblSmtpUsername
+      // 
+      this.lblSmtpUsername.AutoSize = true;
+      this.lblSmtpUsername.Location = new System.Drawing.Point(298, 510);
+      this.lblSmtpUsername.Name = "lblSmtpUsername";
+      this.lblSmtpUsername.Size = new System.Drawing.Size(86, 13);
+      this.lblSmtpUsername.TabIndex = 35;
+      this.lblSmtpUsername.Text = "SMTP Usernane:";
+      // 
+      // txtSmtpUsername
+      // 
+      this.txtSmtpUsername.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.txtSmtpUsername.Location = new System.Drawing.Point(384, 507);
+      this.txtSmtpUsername.Name = "txtSmtpUsername";
+      this.txtSmtpUsername.Size = new System.Drawing.Size(192, 21);
+      this.txtSmtpUsername.TabIndex = 36;
+      // 
+      // lblSmtpPassword
+      // 
+      this.lblSmtpPassword.AutoSize = true;
+      this.lblSmtpPassword.Location = new System.Drawing.Point(298, 537);
+      this.lblSmtpPassword.Name = "lblSmtpPassword";
+      this.lblSmtpPassword.Size = new System.Drawing.Size(86, 13);
+      this.lblSmtpPassword.TabIndex = 37;
+      this.lblSmtpPassword.Text = "SMTP Password:";
+      // 
+      // txtSmtpPassword
+      // 
+      this.txtSmtpPassword.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.txtSmtpPassword.Location = new System.Drawing.Point(384, 534);
+      this.txtSmtpPassword.Name = "txtSmtpPassword";
+      this.txtSmtpPassword.PasswordChar = '*';
+      this.txtSmtpPassword.Size = new System.Drawing.Size(192, 21);
+      this.txtSmtpPassword.TabIndex = 38;
+      // 
+      // grdMappings
+      // 
+      this.grdMappings.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+      this.grdMappings.Location = new System.Drawing.Point(97, 119);
+      this.grdMappings.Name = "grdMappings";
+      this.grdMappings.Size = new System.Drawing.Size(479, 58);
+      this.grdMappings.TabIndex = 39;
+      // 
+      // etchedLine2
+      // 
+      this.etchedLine2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.etchedLine2.Edge = DS.Controls.EtchEdge.Center;
+      this.etchedLine2.Location = new System.Drawing.Point(12, 299);
+      this.etchedLine2.Name = "etchedLine2";
+      this.etchedLine2.Size = new System.Drawing.Size(564, 21);
+      this.etchedLine2.TabIndex = 18;
+      this.etchedLine2.TextLabel = "Email";
+      // 
+      // etchedLine4
+      // 
+      this.etchedLine4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.etchedLine4.Edge = DS.Controls.EtchEdge.Center;
+      this.etchedLine4.Location = new System.Drawing.Point(-3, 563);
+      this.etchedLine4.Name = "etchedLine4";
+      this.etchedLine4.Size = new System.Drawing.Size(596, 21);
+      this.etchedLine4.TabIndex = 15;
+      this.etchedLine4.TextLabel = "";
+      // 
+      // etchedLine3
+      // 
+      this.etchedLine3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.etchedLine3.Edge = DS.Controls.EtchEdge.Center;
+      this.etchedLine3.Location = new System.Drawing.Point(12, 183);
+      this.etchedLine3.Name = "etchedLine3";
+      this.etchedLine3.Size = new System.Drawing.Size(564, 21);
+      this.etchedLine3.TabIndex = 7;
+      this.etchedLine3.TextLabel = "Ratings ";
+      // 
+      // etchedLine1
+      // 
+      this.etchedLine1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.etchedLine1.Edge = DS.Controls.EtchEdge.Center;
+      this.etchedLine1.Location = new System.Drawing.Point(12, 12);
+      this.etchedLine1.Name = "etchedLine1";
+      this.etchedLine1.Size = new System.Drawing.Size(564, 21);
+      this.etchedLine1.TabIndex = 0;
+      this.etchedLine1.TextLabel = "Plex ";
+      // 
       // Options3
       // 
       this.AcceptButton = this.cmdOk;
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.CancelButton = this.cmdCancel;
-      this.ClientSize = new System.Drawing.Size(590, 296);
+      this.ClientSize = new System.Drawing.Size(590, 624);
+      this.Controls.Add(this.grdMappings);
+      this.Controls.Add(this.lblSmtpPassword);
+      this.Controls.Add(this.txtSmtpPassword);
+      this.Controls.Add(this.lblSmtpUsername);
+      this.Controls.Add(this.txtSmtpUsername);
+      this.Controls.Add(this.lblSecurity);
+      this.Controls.Add(this.cboSecurity);
+      this.Controls.Add(this.chkUseSsl);
+      this.Controls.Add(this.lblSmtpPort);
+      this.Controls.Add(this.txtSmtpPort);
+      this.Controls.Add(this.lblSmtpServer);
+      this.Controls.Add(this.txtSmtpServer);
+      this.Controls.Add(this.lblFromEmail);
+      this.Controls.Add(this.txtFromEmail);
+      this.Controls.Add(this.lblFromName);
+      this.Controls.Add(this.txtFromName);
+      this.Controls.Add(this.lblSendToEmail);
+      this.Controls.Add(this.txtSendToEmail);
+      this.Controls.Add(this.lblSendToName);
+      this.Controls.Add(this.txtSendToName);
+      this.Controls.Add(this.chkSendEmail);
+      this.Controls.Add(this.etchedLine2);
       this.Controls.Add(this.txtPlexUri);
       this.Controls.Add(this.lblPlexUri);
       this.Controls.Add(this.txtPlexPassword);
@@ -281,6 +528,7 @@
       this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
       this.Text = "Options";
       this.Load += new System.EventHandler(this.Options3_Load);
+      ((System.ComponentModel.ISupportInitialize)(this.grdMappings)).EndInit();
       this.ResumeLayout(false);
       this.PerformLayout();
 
@@ -306,5 +554,27 @@
     private System.Windows.Forms.TextBox txtPlexPassword;
     private System.Windows.Forms.TextBox txtPlexUri;
     private System.Windows.Forms.Label lblPlexUri;
+    private Controls.EtchedLine etchedLine2;
+    private System.Windows.Forms.CheckBox chkSendEmail;
+    private System.Windows.Forms.Label lblSendToName;
+    private System.Windows.Forms.TextBox txtSendToName;
+    private System.Windows.Forms.Label lblSendToEmail;
+    private System.Windows.Forms.TextBox txtSendToEmail;
+    private System.Windows.Forms.Label lblFromEmail;
+    private System.Windows.Forms.TextBox txtFromEmail;
+    private System.Windows.Forms.Label lblFromName;
+    private System.Windows.Forms.TextBox txtFromName;
+    private System.Windows.Forms.Label lblSmtpServer;
+    private System.Windows.Forms.TextBox txtSmtpServer;
+    private System.Windows.Forms.Label lblSmtpPort;
+    private System.Windows.Forms.TextBox txtSmtpPort;
+    private System.Windows.Forms.CheckBox chkUseSsl;
+    private System.Windows.Forms.Label lblSecurity;
+    private System.Windows.Forms.ComboBox cboSecurity;
+    private System.Windows.Forms.Label lblSmtpUsername;
+    private System.Windows.Forms.TextBox txtSmtpUsername;
+    private System.Windows.Forms.Label lblSmtpPassword;
+    private System.Windows.Forms.TextBox txtSmtpPassword;
+    private System.Windows.Forms.DataGridView grdMappings;
   }
 }

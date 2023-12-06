@@ -1,4 +1,5 @@
 ﻿using DS.Controls;
+using MailKit.Security;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -20,11 +21,17 @@ namespace DS.PlexRatingsSync
       PopulateDropdowns();
 
       GetPreferences();
+
+      EnableDisableRatingsOptions(chkSyncRatings.Checked);
+
+      EnableDisableEmailOptions(chkSendEmail.Checked);
     }
 
     private void PopulateDropdowns()
     {
       cboSyncSource.DataSource = EnumHelper.GetAll<SyncSources>();
+
+      cboSecurity.DataSource = EnumHelper.GetAll<SecureSocketOptions>();
     }
 
     private void GetPreferences()
@@ -66,6 +73,36 @@ namespace DS.PlexRatingsSync
           break;
         }
       }
+
+      chkSendEmail.Checked = Settings.SendEmailSummaryOfUnmatched;
+
+      txtSendToName.Text = Settings.EmailToName;
+
+      txtSendToEmail.Text = Settings.EmailToEmailAddess;
+
+      txtFromName.Text = Settings.EmailFromName;
+
+      txtFromEmail.Text = Settings.EmailFromEmailAddess;
+
+      txtSmtpServer.Text = Settings.SmtpServer;
+
+      txtSmtpPort.Text = Settings.SmtpPort.ToString();
+
+      chkUseSsl.Checked = Settings.UseSsl;
+
+      foreach (EnumHelper.EnumValue item in cboSecurity.Items)
+      {
+        if (item.EnumItem.Equals(Settings.SecurityOption))
+        {
+          cboSecurity.SelectedItem = item;
+
+          break;
+        }
+      }
+
+      txtSmtpUsername.Text = Settings.SmtpUsername;
+
+      txtSmtpPassword.Text = Settings.SmtpPassword;
     }
 
     private void SavePreferences()
@@ -85,6 +122,30 @@ namespace DS.PlexRatingsSync
 
       if (cboClashWinner.SelectedItem is EnumHelper.EnumValue clash)
         Settings.ClashHandling = (ClashWinner)clash.EnumItem;
+
+      Settings.SendEmailSummaryOfUnmatched = chkSendEmail.Checked;
+
+      Settings.EmailToName = txtSendToName.Text;
+
+      Settings.EmailToEmailAddess = txtSendToEmail.Text;
+
+      Settings.EmailFromName = txtFromName.Text;
+
+      Settings.EmailFromEmailAddess = txtFromEmail.Text;
+
+      Settings.SmtpServer = txtSmtpServer.Text;
+
+      if (int.TryParse(txtSmtpPort.Text, out int port))
+        Settings.SmtpPort = port;
+
+      Settings.UseSsl = chkUseSsl.Checked;
+
+      if (cboSecurity.SelectedItem is EnumHelper.EnumValue security)
+        Settings.SecurityOption = (SecureSocketOptions)security.EnumItem;
+
+      Settings.SmtpUsername = txtSmtpUsername.Text;
+
+      Settings.SmtpPassword = txtSmtpPassword.Text;
 
       Settings.SavePreferences();
     }
@@ -126,24 +187,45 @@ namespace DS.PlexRatingsSync
       cboClashWinner.Enabled = enable;
     }
 
-    private void cmdPlexDatabase_Click(object sender, EventArgs e)
+    private void EnableDisableEmailOptions(bool enable)
     {
-      openFileDialog.Filter = "Plex Database Files|com.plexapp.plugins.library.db";
+      lblSendToName.Enabled = enable;
 
-      if (string.IsNullOrWhiteSpace(txtPlexUsername.Text))
-      {
-        var path = Environment.ExpandEnvironmentVariables(@"%LOCALAPPDATA%\Plex Media Server\Plug-in Support\Databases");
+      txtSendToName.Enabled = enable;
 
-        if (Directory.Exists(path))
-          openFileDialog.InitialDirectory = path;
-      }
-      else
-        openFileDialog.FileName = txtPlexUsername.Text;
+      lblSendToEmail.Enabled = enable;
 
-      if (openFileDialog.ShowDialog() == DialogResult.OK)
-      {
-        txtPlexUsername.Text = openFileDialog.FileName;
-      }
+      txtSendToEmail.Enabled = enable;
+
+      lblFromName.Enabled = enable;
+
+      txtFromName.Enabled = enable;
+
+      lblFromEmail.Enabled = enable;
+
+      txtFromEmail.Enabled = enable;
+
+      lblSmtpServer.Enabled = enable;
+
+      txtSmtpServer.Enabled = enable;
+
+      lblSmtpPort.Enabled = enable;
+
+      txtSmtpPort.Enabled = enable;
+
+      chkUseSsl.Enabled = enable;
+
+      lblSecurity.Enabled = enable;
+
+      cboSecurity.Enabled = enable;
+
+      lblSmtpUsername.Enabled = enable;
+
+      txtSmtpUsername.Enabled = enable;
+
+      lblSmtpPassword.Enabled = enable;
+
+      txtSmtpPassword.Enabled = enable;
     }
 
     private void CmdOk_Click(object sender, EventArgs e)
@@ -237,6 +319,11 @@ namespace DS.PlexRatingsSync
       }
 
       cboClashWinner.DataSource = clashWinners;
+    }
+
+    private void chkSendEmail_CheckedChanged(object sender, EventArgs e)
+    {
+      EnableDisableEmailOptions(chkSendEmail.Checked);
     }
 
     private class SelectedPlaylist

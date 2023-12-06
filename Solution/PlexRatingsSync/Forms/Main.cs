@@ -234,6 +234,33 @@ namespace DS.PlexRatingsSync
         return false;
       }
 
+      if (Settings.SendEmailSummaryOfUnmatched)
+      {
+        if (string.IsNullOrWhiteSpace(Settings.SmtpServer))
+        {
+          if (showMessage)
+            MessageBox.Show("You must enter an SMTP Server Address.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+          return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(Settings.EmailFromEmailAddess))
+        {
+          if (showMessage)
+            MessageBox.Show("You must enter a from email address.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+          return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(Settings.EmailToEmailAddess))
+        {
+          if (showMessage)
+            MessageBox.Show("You must enter a to email address.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+          return false;
+        }
+      }
+
       return true;
     }
 

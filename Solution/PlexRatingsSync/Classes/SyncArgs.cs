@@ -39,6 +39,8 @@ namespace DS.PlexRatingsSync
 
     private bool _DisposedValue;
 
+    private List<string> _InvalidTracks = new List<string>();
+
     #endregion
 
     #region Public properties
@@ -46,6 +48,8 @@ namespace DS.PlexRatingsSync
     public BackgroundWorker Worker { get; set; }
 
     public PlexTvRoot PlexUser { get; set; }
+
+    public string PlexServerIdentitfier { get; set; }
 
     public Dictionary<string, string> MusicFolderMappings
     {
@@ -88,8 +92,9 @@ namespace DS.PlexRatingsSync
 
     public int? CurrentPlexRating => (int?)_CurrentTrack.UserRating;
 
-    // TODO_DS1 Need to resolve the file location correctly
     public int? CurrentFileRating => ReadFileRating();
+
+    public List<string> InvalidTracks => _InvalidTracks;
 
     #endregion
 
@@ -103,6 +108,78 @@ namespace DS.PlexRatingsSync
     #endregion
 
     #region Public methods
+
+    public string Artist(bool asUri = false, bool asHtmlUri = false)
+    {
+      if (asUri || asHtmlUri)
+      {
+        var uri = $"{Settings.PlexUri}web/index.html#!/server/{PlexServerIdentitfier}/details?key=%2Flibrary%2Fmetadata%2F{CurrentTrack.CleanGrandparentKey}";
+
+        if (asHtmlUri)
+          return $"<a href=\"{uri}\">{CurrentTrack.GrandparentTitle}</a>";
+        else
+          return uri;
+      }
+
+      return CurrentTrack.GrandparentTitle;
+    }
+
+    public string Album(bool asUri, bool asHtmlUri = false)
+    {
+      if (asUri || asHtmlUri)
+      {
+        var uri = $"{Settings.PlexUri}web/index.html#!/server/{PlexServerIdentitfier}/details?key=%2Flibrary%2Fmetadata%2F{CurrentTrack.CleanParentKey}";
+
+        if (asHtmlUri)
+          return $"<a href=\"{uri}\">{CurrentTrack.ParentTitle}</a>";
+        else
+          return uri;
+      }
+
+      return CurrentTrack.ParentTitle;
+    }
+
+    public string Track()
+    {
+      string track = string.Empty;
+
+      if (CurrentTrack.Index == 0)
+        track += $"{CurrentTrack.Title}";
+      else
+      {
+        if (CurrentTrack.ParentIndex == 0)
+          track += $"Track: {CurrentTrack.Index}: {CurrentTrack.Title}";
+        else
+          track += $"Disc {CurrentTrack.ParentIndex} | Track {CurrentTrack.Index}: {CurrentTrack.Title}";
+      }
+
+      return track;
+    }
+
+    public void AddInvalidTrack(int? chosenRating, int? currentPlexRating, int? currentFileRating)
+    {
+      string chosenRatingString = chosenRating == null ? "NotSet" : chosenRating.ToString();
+
+      string currentPlexRatingString = currentPlexRating == null ? "NotSet" : currentPlexRating.ToString();
+
+      string currentFileRatingString = currentFileRating == null ? "NotSet" : currentFileRating.ToString();
+
+      string body = string.Empty;
+
+      // chosenRating of -1 means we are skipping the rating sync, so just report
+      if ((chosenRating ?? 0) == -1)
+        body = $@"{Artist(true, true)}<br/>
+{Album(true, true)}<br/>
+{Track()}<br/>
+Ratings: [Plex: {currentPlexRatingString}] | [File: {currentFileRatingString}]<br/>";
+      else
+        body = $@"{Artist(true, true)}<br/>
+{Album(true, true)}<br/>
+{Track()}<br/>
+Ratings: [Chosen: {chosenRatingString} ] | [Plex: {currentPlexRatingString}] | [File: {currentFileRatingString}]<br/>";
+
+      _InvalidTracks.Add(body);
+    }
 
     public void ReportProgress(ProgressType type)
     {

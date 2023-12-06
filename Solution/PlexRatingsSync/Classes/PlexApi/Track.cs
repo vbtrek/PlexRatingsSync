@@ -68,7 +68,7 @@ namespace DS.PlexRatingsSync.Classes.PlexApi
     public int ParentIndex { get; set; }
 
     [XmlAttribute(AttributeName = "userRating")]
-    public decimal UserRating { get; set; }
+    public decimal? UserRating { get; set; }
 
     [XmlAttribute(AttributeName = "ratingCount")]
     public int RatingCount { get; set; }

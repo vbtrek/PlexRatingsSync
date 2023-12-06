@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
+using MS.WindowsAPICodePack.Internal;
 
 namespace DS.PlexRatingsSync.Classes.PlexApi
 {
@@ -11,6 +14,7 @@ namespace DS.PlexRatingsSync.Classes.PlexApi
   [XmlInclude(typeof(Part))]
   public class MediaContainer
   {
+    // From library/sections call
     [XmlAttribute(AttributeName = "size")]
     public int Size { get; set; }
 
@@ -29,7 +33,29 @@ namespace DS.PlexRatingsSync.Classes.PlexApi
     [XmlElement(ElementName = "Track")]
     public List<Track> Tracks { get; set; }
 
-    public void ReadFromXml(XmlReader reader)
+    // From Identity call
+    [XmlAttribute(AttributeName = "machineIdentifier")]
+    public string MachineIdentifier { get; set; }
+
+    [XmlAttribute(AttributeName = "version")]
+    public string Version { get; set; }
+
+    public static MediaContainer Parse(string xml)
+    {
+      MediaContainer container = new MediaContainer();
+
+      try
+      {
+        using (XmlReader reader = XmlReader.Create(new StringReader(xml)))
+          container.ReadFromXml(reader);
+      }
+      catch
+      { }
+
+      return container;
+    }
+
+    private void ReadFromXml(XmlReader reader)
     {
       reader.MoveToContent();
 

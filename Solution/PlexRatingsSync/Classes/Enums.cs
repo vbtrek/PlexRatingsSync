@@ -40,8 +40,8 @@ namespace DS.PlexRatingsSync
     [Description("Plex Always Wins")]
     Plex = 1,
 
-//    [Description("File or iTunes Always Wins")]
-//    FileOrItunes = 2,
+    //    [Description("File or iTunes Always Wins")]
+    //    FileOrItunes = 2,
     [Description("File Always Wins")]
     File = 2,
 
@@ -49,7 +49,10 @@ namespace DS.PlexRatingsSync
     Prompt = 3,
 
     [Description("Always Prompt")]
-    AlwaysPrompt = 4
+    AlwaysPrompt = 4,
+
+    [Description("The Largest Rating Will Win If Both Have Ratings")]
+    LargestRating = 5
   }
 
   public enum RatingsClashResult
