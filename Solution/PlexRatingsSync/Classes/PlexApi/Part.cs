@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Xml;
 using System.Xml.Serialization;
+using DS.PlexRatingsSync.Managers;
 
 namespace DS.PlexRatingsSync.Classes.PlexApi
 {

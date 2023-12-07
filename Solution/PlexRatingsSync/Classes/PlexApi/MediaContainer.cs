@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
+using DS.PlexRatingsSync.Managers;
 using MS.WindowsAPICodePack.Internal;
 
 namespace DS.PlexRatingsSync.Classes.PlexApi
@@ -12,6 +13,7 @@ namespace DS.PlexRatingsSync.Classes.PlexApi
   [XmlInclude(typeof(Track))]
   [XmlInclude(typeof(Media))]
   [XmlInclude(typeof(Part))]
+  [XmlInclude(typeof(Directory))]
   public class MediaContainer
   {
     // From library/sections call
@@ -40,6 +42,12 @@ namespace DS.PlexRatingsSync.Classes.PlexApi
     [XmlAttribute(AttributeName = "version")]
     public string Version { get; set; }
 
+    [XmlElement(ElementName = "Directory")]
+    public List<Directory> Directory { get; set; }
+
+    [XmlAttribute(AttributeName = "title1")]
+    public string Title1 { get; set; }
+
     public static MediaContainer Parse(string xml)
     {
       MediaContainer container = new MediaContainer();
@@ -65,6 +73,7 @@ namespace DS.PlexRatingsSync.Classes.PlexApi
       MediaTagPrefix = reader.GetAttributeValue<string>("mediaTagPrefix");
       MediaTagVersion= reader.GetAttributeValue<int>("mediaTagVersion");
       Tracks = new List<Track>();
+      Directory = new List<Directory>();
 
       if (reader.IsEmpty()) return;
 
@@ -82,6 +91,12 @@ namespace DS.PlexRatingsSync.Classes.PlexApi
               Tracks.Add(track);
               break;
 
+            case "Directory":
+              var directory = new Directory();
+              directory.ReadFromXmlFragment(reader);
+              Directory.Add(directory);
+              break;
+
             default:
               reader.Skip();
               break;
@@ -93,47 +108,6 @@ namespace DS.PlexRatingsSync.Classes.PlexApi
           break;
         }
       }
-    }
-  }
-
-  // TODO_DS1 Move to an XmlManager class
-  public static class XmlManager
-  {
-    public static valueT GetAttributeValue<valueT>(this XmlReader reader, string attributeName)
-    {
-      try
-      {
-        var value = reader.GetAttribute(attributeName);
-
-        if (value == null)
-          return default(valueT);
-
-        if (typeof(valueT).IsAssignableFrom(typeof(bool)))
-        {
-          if (value == "1" || value.ToLower() == "true")
-            return (valueT)Convert.ChangeType(true, typeof(valueT));
-
-          return (valueT)Convert.ChangeType(false, typeof(valueT));
-        }
-
-        return (valueT)Convert.ChangeType(value, typeof(valueT));
-      }
-      catch
-      {
-        return default(valueT);
-      }
-    }
-
-    public static bool IsEmpty(this XmlReader reader)
-    {
-      if (reader.IsEmptyElement)
-      {
-        reader.Read();
-
-        return true;
-      }
-
-      return false;
     }
   }
 }

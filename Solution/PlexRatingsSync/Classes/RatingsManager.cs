@@ -1,20 +1,14 @@
 ﻿using DS.Library.MessageHandling;
-using DS.PlexRatingsSync.Classes;
 using DS.PlexRatingsSync.Classes.PlexApi;
-using DS.PlexRatingsSync.Classes.PlexTvApi;
+using DS.PlexRatingsSync.Managers;
 using MailKit.Net.Smtp;
-using MailKit.Security;
 using Microsoft.WindowsAPICodePack.Shell;
 using MimeKit;
-using Newtonsoft.Json;
 using Sentry;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 
 namespace DS.PlexRatingsSync
 {
@@ -30,52 +24,12 @@ namespace DS.PlexRatingsSync
       args.ReportProgress("Reading Track Data From Plex...");
 
       // Login and get auth token
-      // *************************************************************************************************************
-      // USER CONFIGURABLE SETTINGS
-      // *************************************************************************************************************
-      string username = Settings.PlexUsername;
-      string password = Settings.PlexPassword;
-
-      // TODO_DS1 We can call http://10.1.14.114:32400/library/sections/ and pick out the items where type="artist",
-      // I think there could be multiple Locations, then we are mapping Location.Path to a user defined path
-      Dictionary<string, string> localMusicRoots = new Dictionary<string, string>
-      {
-        { "/data/music", @"\\homeNAS\Music" }
-      };
-      // *************************************************************************************************************
-
-      //var plainTextBytes = System.Text.Encoding.ASCII.GetBytes($"{username}:{password}");
-      //var auth = Convert.ToBase64String(plainTextBytes);
-      var loginResult = RestClient.Create(new Uri("https://plex.tv/users/sign_in.json"), RestClient.httpMethod.Post, string.Empty)
-        .AddHeader("X-Plex-Client-Identifier", "Plexapi")
-        .AddHeader("X-Plex-Product", "PlexRatingsSync")
-        .AddHeader("X-Plex-Version", Application.ProductVersion)
-        .AddHeader("X-Plex-Device", Environment.MachineName)
-        .AddHeader("X-Plex-Platform", "Desktop")
-        .AcceptHeader(RestClient.httpContentType.Json)
-        .AuthorizationBasic(username, password)
-        .SendRequestWithExceptionResponse();
-
-      var plexUser = JsonConvert.DeserializeObject<PlexTvRoot>(loginResult);
+      var plexUser = PlexApiManager.GetUser();
 
       // Get all tracks
-      var media = RestClient.Create(
-        new Uri($"{Settings.PlexUri}library/all"), RestClient.httpMethod.Get, string.Empty)
-        .AddHeader("X-Plex-Token", plexUser.user.authToken)
-        .AddParameter("type", "10") // 10=tracks
-        .SendRequestWithExceptionResponse();
+      MediaContainer mediaContainer = PlexApiManager.GetAllTracks(plexUser);
 
-      MediaContainer mediaContainer = MediaContainer.Parse(media);
-
-
-      // https://www.plexopedia.com/plex-media-server/api/server/identity/
-      var server = RestClient.Create(
-        new Uri($"{Settings.PlexUri}identity"), RestClient.httpMethod.Get, string.Empty)
-        .AddHeader("X-Plex-Token", plexUser.user.authToken)
-        .AddParameter("type", "10") // 10=tracks
-        .SendRequestWithExceptionResponse();
-
-      MediaContainer serverDetails = MediaContainer.Parse(server);
+      MediaContainer serverDetails = PlexApiManager.GetServerIdentity(plexUser);
 
       args.InvalidTracks.Clear();
 
@@ -89,7 +43,7 @@ namespace DS.PlexRatingsSync
 
       args.PlexUser = plexUser;
 
-      args.MusicFolderMappings = localMusicRoots;
+      args.MusicFolderMappings = Settings.PlexFolderMappings;
 
       int trackCount = 1;
 
@@ -170,15 +124,7 @@ namespace DS.PlexRatingsSync
 
     private static void ValidateRating(SyncArgs args, int? chosenRating)
     {
-      // Read the plex file using the API
-      var media = RestClient.Create(
-        new Uri($"{Settings.PlexUri}library/all"), RestClient.httpMethod.Get, string.Empty)
-        .AddHeader("X-Plex-Token", args.PlexUser.user.authToken)
-        .AddParameter("type", "10") // 10=tracks
-        .AddParameter("id", args.CurrentTrack.CleanKey)
-        .SendRequestWithExceptionResponse();
-
-      MediaContainer mediaContainer = MediaContainer.Parse(media);
+      MediaContainer mediaContainer = PlexApiManager.GetTrack(args.PlexUser, args.CurrentTrack.CleanKey);
 
       int? currentPlexRating = args.NormalisedRating(Convert.ToInt32(mediaContainer.Tracks[0].UserRating), RatingConvert.Plex);
 
@@ -324,12 +270,7 @@ Total Tracks: {args.InvalidTracks.Count}<br/>
       args.ReportProgress(SyncArgs.ProgressType.IncrementUpdatedCount);
 
       // Update a rating entry using the rest API
-      var result = RestClient.Create(new Uri($"{Settings.PlexUri}:/rate"), RestClient.httpMethod.Put, string.Empty)
-        .AddHeader("X-Plex-Token", args.PlexUser.user.authToken)
-        .AddParameter("key", args.CurrentTrack.CleanKey)
-        .AddParameter("identifier", "com.plexapp.plugins.library")
-        .AddParameter("rating", currentRatingInPlexFormat.ToString())
-        .SendRequestWithExceptionResponse();
+      PlexApiManager.SetRating(args.PlexUser, args.CurrentTrack.CleanKey, currentRatingInPlexFormat);
 
       Debug.Print(message);
     }

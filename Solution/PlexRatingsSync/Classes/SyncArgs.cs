@@ -1,4 +1,5 @@
 ﻿using DS.Library.MessageHandling;
+using DS.PlexRatingsSync.Classes;
 using DS.PlexRatingsSync.Classes.PlexApi;
 using DS.PlexRatingsSync.Classes.PlexTvApi;
 using Microsoft.WindowsAPICodePack.Shell;
@@ -31,7 +32,7 @@ namespace DS.PlexRatingsSync
 
     #region Private members
 
-    private Dictionary<string, string> _MusicFolderMappings;
+    private List<PlexFolderMapping> _MusicFolderMappings;
 
     private Track _CurrentTrack = null;
 
@@ -51,7 +52,7 @@ namespace DS.PlexRatingsSync
 
     public string PlexServerIdentitfier { get; set; }
 
-    public Dictionary<string, string> MusicFolderMappings
+    public List<PlexFolderMapping> MusicFolderMappings
     {
       get => _MusicFolderMappings;
       set { _MusicFolderMappings = value; }
@@ -78,8 +79,8 @@ namespace DS.PlexRatingsSync
 
             foreach (var folder in _MusicFolderMappings)
             {
-              if (file.StartsWith(folder.Key))
-                return new FileInfo($"{folder.Value}{file.Substring(folder.Key.Length)}");
+              if (file.StartsWith(folder.PlexFolder))
+                return new FileInfo($"{folder.LocalFolder}{file.Substring(folder.PlexFolder.Length)}");
             }
           }
         }

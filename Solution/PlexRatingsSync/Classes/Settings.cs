@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using DS.PlexRatingsSync.Classes;
 using MailKit.Security;
 using Microsoft.Win32;
+using Newtonsoft.Json;
 
 namespace DS.PlexRatingsSync
 {
@@ -12,6 +12,7 @@ namespace DS.PlexRatingsSync
     public static string PlexUsername { get; set; }
     public static string PlexPassword { get; set; }
     public static string PlexUri { get; set; }
+    public static List<PlexFolderMapping> PlexFolderMappings { get; set; }
 
     public static bool SyncRatings { get; set; }
     public static SyncSources SyncSource { get; set; }
@@ -37,6 +38,7 @@ namespace DS.PlexRatingsSync
       PlexUsername = GetOption("PlexUsername", string.Empty);
       PlexPassword = GetOption("PlexPassword", string.Empty);
       PlexUri = GetOption("PlexUri", string.Empty);
+      PlexFolderMappings = JsonConvert.DeserializeObject<List<PlexFolderMapping>>(GetOption("PlexFolderMappings", string.Empty));
 
       SyncRatings = bool.Parse(GetOption("SyncRatings", "false"));
       SyncSource = (SyncSources)Enum.Parse(typeof(SyncSources), GetOption("SyncSource", "0"));
@@ -75,6 +77,7 @@ namespace DS.PlexRatingsSync
       SaveOption("PlexUsername", PlexUsername);
       SaveOption("PlexPassword", PlexPassword);
       SaveOption("PlexUri", PlexUri);
+      SaveOption("PlexFolderMappings", JsonConvert.SerializeObject(PlexFolderMappings));
 
       SaveOption("SyncRatings", SyncRatings);
       SaveOption("SyncSource", SyncSource);

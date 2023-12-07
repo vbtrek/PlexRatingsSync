@@ -1,4 +1,6 @@
 ﻿using DS.Controls;
+using DS.PlexRatingsSync.Classes;
+using DS.PlexRatingsSync.Managers;
 using MailKit.Security;
 using System;
 using System.Collections.Generic;
@@ -25,6 +27,10 @@ namespace DS.PlexRatingsSync
       EnableDisableRatingsOptions(chkSyncRatings.Checked);
 
       EnableDisableEmailOptions(chkSendEmail.Checked);
+
+      SetupFolderGrid();
+
+      LoadMusicFolders();
     }
 
     private void PopulateDropdowns()
@@ -112,6 +118,8 @@ namespace DS.PlexRatingsSync
       Settings.PlexPassword = txtPlexPassword.Text;
 
       Settings.PlexUri = txtPlexUri.Text;
+
+      Settings.PlexFolderMappings = grdMappings.DataSource as List<PlexFolderMapping>;
 
       Settings.SyncRatings = chkSyncRatings.Checked;
 
@@ -228,11 +236,117 @@ namespace DS.PlexRatingsSync
       txtSmtpPassword.Enabled = enable;
     }
 
+    private void SetupFolderGrid()
+    {
+      grdMappings.Columns.Clear();
+
+      grdMappings.Columns.Add("PlexPath", "Plex Path");
+      grdMappings.Columns["PlexPath"].DataPropertyName = "PlexFolder";
+      grdMappings.Columns["PlexPath"].Width = 500;
+      grdMappings.Columns["PlexPath"].ReadOnly = true;
+
+      DataGridViewButtonColumn col2 = new DataGridViewButtonColumn
+      {
+        Name = "LocalPath",
+        Text = "Local Path",
+        HeaderText = "Local Path",
+        DataPropertyName = "LocalFolder",
+        Width = 500,
+        UseColumnTextForButtonValue = false
+      };
+
+      grdMappings.Columns.Add(col2);
+
+      grdMappings.RowHeadersVisible = false;
+      grdMappings.AutoGenerateColumns = false;
+      grdMappings.AllowUserToResizeRows = false;
+      grdMappings.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+      grdMappings.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+      grdMappings.ColumnHeadersHeight = 20;
+
+      grdMappings.CellClick += GrdMappings_CellClick;
+    }
+
+    private void GrdMappings_CellClick(object sender, DataGridViewCellEventArgs e)
+    {
+      if (grdMappings.Columns[e.ColumnIndex].Name == "LocalPath")
+      {
+        FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+
+        var rowData = grdMappings.CurrentRow.DataBoundItem as PlexFolderMapping;
+
+        if (!string.IsNullOrWhiteSpace(rowData.LocalFolder))
+          folderBrowserDialog.SelectedPath = rowData.LocalFolder;
+
+        if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+        {
+          rowData.LocalFolder = folderBrowserDialog.SelectedPath;
+        }
+      }
+    }
+
+    private void LoadMusicFolders()
+    {
+      if (string.IsNullOrWhiteSpace(txtPlexUsername.Text)
+        || string.IsNullOrWhiteSpace(txtPlexPassword.Text)
+        || string.IsNullOrWhiteSpace(txtPlexUri.Text))
+        return;
+
+      // Try to get an auth token
+      try
+      {
+        var plexUser = PlexApiManager.GetUser();
+
+        if (string.IsNullOrWhiteSpace(plexUser?.user?.authToken))
+          return;
+
+        var sections = PlexApiManager.GetLibrarySections(plexUser);
+
+        var artistSections = sections.Directory
+          .Where(d => d.Type == "artist");
+
+        List<PlexFolderMapping> folders = new List<PlexFolderMapping>();
+
+        foreach (var artist in artistSections)
+        {
+          foreach (var location in artist.Location)
+          {
+            var mappedFolder = Settings.PlexFolderMappings.FirstOrDefault(m => m.PlexFolder == location.Path);
+
+            if (mappedFolder == null)
+            {
+              mappedFolder = new PlexFolderMapping { PlexFolder = location.Path };
+
+              Settings.PlexFolderMappings.Add(mappedFolder);
+            }
+
+            folders.Add(mappedFolder);
+          }
+        }
+
+        grdMappings.DataSource = folders;
+      }
+      catch
+      {
+        grdMappings.DataSource = null;
+      }
+    }
+
     private void CmdOk_Click(object sender, EventArgs e)
     {
       SavePreferences();
 
       Close();
+    }
+
+    private void txtPlexUsername_Validating(object sender, System.ComponentModel.CancelEventArgs e)
+    {
+      LoadMusicFolders();
+    }
+
+    private void txtPlexPassword_Validating(object sender, System.ComponentModel.CancelEventArgs e)
+    {
+      LoadMusicFolders();
     }
 
     private void chkSyncRatings_CheckedChanged(object sender, EventArgs e)
