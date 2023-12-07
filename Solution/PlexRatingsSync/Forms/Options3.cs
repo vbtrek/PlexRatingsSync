@@ -300,7 +300,7 @@ namespace DS.PlexRatingsSync
         if (string.IsNullOrWhiteSpace(plexUser?.user?.authToken))
           return;
 
-        var sections = PlexApiManager.GetLibrarySections(plexUser);
+        var sections = PlexApiManager.GetLibrarySections(plexUser, txtPlexUri.Text);
 
         var artistSections = sections.Directory
           .Where(d => d.Type == "artist");

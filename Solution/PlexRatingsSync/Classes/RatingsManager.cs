@@ -72,7 +72,8 @@ namespace DS.PlexRatingsSync
     {
       try
       {
-        if (args.CurrentTrack != null && File.Exists(args.CurrentLocalFile.FullName))
+        if (args.CurrentTrack != null && args.CurrentLocalFile != null
+          && File.Exists(args.CurrentLocalFile.FullName))
         {
           try
           {

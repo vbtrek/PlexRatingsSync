@@ -4,6 +4,7 @@ using DS.PlexRatingsSync.Classes;
 using DS.PlexRatingsSync.Classes.PlexApi;
 using DS.PlexRatingsSync.Classes.PlexTvApi;
 using Newtonsoft.Json;
+using Org.BouncyCastle.Bcpg.OpenPgp;
 
 namespace DS.PlexRatingsSync.Managers
 {
@@ -86,8 +87,13 @@ namespace DS.PlexRatingsSync.Managers
 
     public static MediaContainer GetLibrarySections(PlexTvRoot plexUser)
     {
+      return GetLibrarySections(plexUser, Settings.PlexUri);
+    }
+
+    public static MediaContainer GetLibrarySections(PlexTvRoot plexUser, string plexUri)
+    {
       var sections = RestClient.Create(
-        new Uri($"{Settings.PlexUri}library/sections"), RestClient.httpMethod.Get, string.Empty)
+        new Uri($"{plexUri}library/sections"), RestClient.httpMethod.Get, string.Empty)
         .AddHeader("X-Plex-Token", plexUser.user.authToken)
         .SendRequestWithExceptionResponse();
 

@@ -38,7 +38,7 @@ namespace DS.PlexRatingsSync
       PlexUsername = GetOption("PlexUsername", string.Empty);
       PlexPassword = GetOption("PlexPassword", string.Empty);
       PlexUri = GetOption("PlexUri", string.Empty);
-      PlexFolderMappings = JsonConvert.DeserializeObject<List<PlexFolderMapping>>(GetOption("PlexFolderMappings", string.Empty));
+      PlexFolderMappings = JsonConvert.DeserializeObject<List<PlexFolderMapping>>(GetOption("PlexFolderMappings", string.Empty)) ?? new List<PlexFolderMapping>();
 
       SyncRatings = bool.Parse(GetOption("SyncRatings", "false"));
       SyncSource = (SyncSources)Enum.Parse(typeof(SyncSources), GetOption("SyncSource", "0"));

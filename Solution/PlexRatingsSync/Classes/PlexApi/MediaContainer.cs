@@ -36,6 +36,9 @@ namespace DS.PlexRatingsSync.Classes.PlexApi
     public List<Track> Tracks { get; set; }
 
     // From Identity call
+    [XmlAttribute(AttributeName = "claimed")]
+    public string Claimed { get; set; }
+
     [XmlAttribute(AttributeName = "machineIdentifier")]
     public string MachineIdentifier { get; set; }
 
@@ -69,11 +72,16 @@ namespace DS.PlexRatingsSync.Classes.PlexApi
 
       // Read node attributes
       Size = reader.GetAttributeValue<int>("size");
+      AllowSync = reader.GetAttributeValue<int>("allowSync");
       Identifier = reader.GetAttributeValue<string>("identifier");
       MediaTagPrefix = reader.GetAttributeValue<string>("mediaTagPrefix");
       MediaTagVersion= reader.GetAttributeValue<int>("mediaTagVersion");
       Tracks = new List<Track>();
+      MachineIdentifier = reader.GetAttributeValue<string>("machineIdentifier");
+      Claimed = reader.GetAttributeValue<string>("claimed");
+      Version = reader.GetAttributeValue<string>("version");
       Directory = new List<Directory>();
+      Title1 = reader.GetAttributeValue<string>("title1");
 
       if (reader.IsEmpty()) return;
 
