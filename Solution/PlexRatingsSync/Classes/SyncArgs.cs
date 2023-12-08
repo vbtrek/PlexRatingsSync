@@ -177,7 +177,7 @@ Ratings: [Plex: {currentPlexRatingString}] | [File: {currentFileRatingString}]<b
         body = $@"{Artist(true, true)}<br/>
 {Album(true, true)}<br/>
 {Track()}<br/>
-Ratings: [Chosen: {chosenRatingString} ] | [Plex: {currentPlexRatingString}] | [File: {currentFileRatingString}]<br/>";
+Ratings: [Chosen: {chosenRatingString} ] | [Plex: {currentPlexRatingString}] | [<a href='{CurrentLocalFile.FullName}'>File</a>: {currentFileRatingString}]<br/>";
 
       _InvalidTracks.Add(body);
     }

@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace DS.PlexRatingsSync
 {
@@ -81,7 +82,7 @@ namespace DS.PlexRatingsSync
 
             int? currentNormalisedPlexRating = args.NormalisedRating(args.CurrentPlexRating, RatingConvert.Plex);
 
-            if (currentNormalisedSourceRating != args.NormalisedRating(args.CurrentPlexRating, RatingConvert.Plex))
+            if (currentNormalisedSourceRating != currentNormalisedPlexRating)
             {
               switch (DetermineClashHandling(args))
               {
@@ -140,6 +141,9 @@ namespace DS.PlexRatingsSync
     private static void SendInvalidTracksEmail(SyncArgs args)
     {
       string allTrackInfo = string.Empty;
+
+      if (!args.InvalidTracks.Any())
+        return;
 
       foreach (var item in args.InvalidTracks)
       {
