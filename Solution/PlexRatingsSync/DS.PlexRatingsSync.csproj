@@ -58,11 +58,6 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DevExpress.Data.v23.1, Version=23.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" />
-    <Reference Include="DevExpress.Drawing.v23.1, Version=23.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" />
-    <Reference Include="DevExpress.Utils.v23.1, Version=23.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" />
-    <Reference Include="DevExpress.XtraEditors.v23.1, Version=23.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" />
-    <Reference Include="DevExpress.XtraWizard.v23.1, Version=23.1.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
     <Reference Include="DS.Library.MessageHandling">
       <HintPath>Referenced Assemblies\DS.Library.MessageHandling.dll</HintPath>
     </Reference>
@@ -151,11 +146,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="EntityFramework">
-      <Version>6.1.3</Version>
-    </PackageReference>
     <PackageReference Include="log4net">
-      <Version>2.0.14</Version>
+      <Version>2.0.15</Version>
     </PackageReference>
     <PackageReference Include="MailKit">
       <Version>4.3.0</Version>
@@ -170,10 +162,7 @@
       <Version>13.0.3</Version>
     </PackageReference>
     <PackageReference Include="Sentry">
-      <Version>3.17.1</Version>
-    </PackageReference>
-    <PackageReference Include="System.Data.SQLite">
-      <Version>1.0.104</Version>
+      <Version>3.41.3</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
