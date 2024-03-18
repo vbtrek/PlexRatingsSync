@@ -1,13 +1,11 @@
 **Project Description**
 
-Sync ratings from music files to plex, and syncs playlists (including smart playlists) from an iTunes library to plex.
+Sync ratings from music files to plex or vice versal using the Plex Rest API.
 
-![Screenshot](https://raw.githubusercontent.com/vbtrek/plexratingssync/master/docs/plexratingssync1.png)
-
-This little utility can be scheduled to run on a Windows Plex server. The utility can sync ratings from files into plex, and also sync playlists (including smart playlists) from an iTunes library file into plex.
+![Processing Screenshot](https://github.com/vbtrek/PlexRatingsSync/assets/26403480/6d726775-dfc5-45c3-99e0-3606f0ef24ed)
 
 You can schedule this app to run on a regular basis using Windows Task Scheduler.
 
 Options...
 
-![Options](https://raw.githubusercontent.com/vbtrek/plexratingssync/master/docs/plexratingssync2.png)
+![Options Screenshot](https://github.com/vbtrek/PlexRatingsSync/assets/26403480/fc785569-d5fb-4fcf-8d56-9e3089eb4bd2)
